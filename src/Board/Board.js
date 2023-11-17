@@ -48,11 +48,13 @@ class Board extends React.Component {
         else if (typeof position === 'number') index = position;
         else throw new Error('Invalid input: position must be an index or array of coordinates');
 
-        if (!value instanceof Ship) throw new Error('Invalid input: value must be instance of ship')
+        if (!(value instanceof Ship)) throw new Error('Invalid input: value must be instance of ship')
 
         let tmpBoard = this.state.board;
         tmpBoard[index] = value;
-        this.state.board = tmpBoard;
+        this.setState({
+            board: tmpBoard,
+        });
     }
 
     /**
