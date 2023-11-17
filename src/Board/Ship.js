@@ -14,13 +14,10 @@ export class Ship {
         switch (this.graphicalType) {
             case 0:
                 return 'Uknown';
-                break;
             case 1:
                 return 'Water';
-                break;
             case 2:
                 return 'Ship';
-                break;
             default:
                 return this.graphicalType
         }
