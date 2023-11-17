@@ -24,9 +24,8 @@ export class Ship {
     }
 
     /**
-     * Changes the play type of the ship
-     * @param {Number} newType - The type to change it to
-     * @returns {Ship} The ship object (this)
+     * @param {Number} newType
+     * @returns {Ship} this
      */
     changePlayType (newType) {
         if (!Object.values(PLAY_TYPES).includes(newType)) throw new Error('Invalid input: newType must be a play type');
@@ -35,9 +34,8 @@ export class Ship {
     }
 
     /**
-     * Changes the graphical type of the ship
-     * @param {Number} newType - The type to change it to
-     * @returns {Ship} The ship object (this)
+     * @param {Number} newType
+     * @returns {Ship} this
      */
     changeGraphicalType (newType) {
         if (!Object.values(GRAPHICAL_TYPES).includes(newType)) throw new Error('Invalid input: newType must be a graphical type');
@@ -46,9 +44,8 @@ export class Ship {
     }
 
     /**
-     * Changes the internal type of the ship
-     * @param {Number} newType - The type to change it to
-     * @returns {Ship} The ship object (this)
+     * @param {Number} newType
+     * @returns {Ship} this
      */
     changeInternalType (newType) {
         if (!Object.values(INTERNAL_TYPES).includes(newType)) throw new Error('Invalid input: newType must be a internal type');
