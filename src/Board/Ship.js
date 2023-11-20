@@ -47,7 +47,8 @@ export class Ship {
         if (this.internalType < INTERNAL_TYPES.SHIP) this.changeInternalType(newType);
         else if (newType < INTERNAL_TYPES.VERTICAL)  this.changeInternalType(newType);
 
-        // not updating upwards to avoid infinite recurrsion
+        if (newType < PLAY_TYPES.SHIP) this.playType = newType;
+        else if (newType > PLAY_TYPES.SHIP) this.playType = PLAY_TYPES.SHIP;
 
         this.graphicalType = newType;
         return this;
@@ -60,7 +61,9 @@ export class Ship {
     changeInternalType (newType) {
         if (!Object.values(INTERNAL_TYPES).includes(newType)) throw new Error('Invalid input: newType must be a internal type');
         
-        // not updating upwards to avoid infinite recurrsion
+        if (newType < GRAPHICAL_TYPES.SHIP) this.graphicalType = newType;
+        else if (newType < INTERNAL_TYPES.VERTICAL) this.graphicalType = newType;
+        else if (newType >= INTERNAL_TYPES.VERTICAL) this.graphicalType = GRAPHICAL_TYPES.SHIP;
         
         this.internalType = newType;
         return this;
