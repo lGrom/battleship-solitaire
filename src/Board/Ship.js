@@ -29,6 +29,10 @@ export class Ship {
      */
     changePlayType (newType) {
         if (!Object.values(PLAY_TYPES).includes(newType)) throw new Error('Invalid input: newType must be a play type');
+        
+        if (this.graphicalType < GRAPHICAL_TYPES.SHIP) this.changeGraphicalType(newType);
+        else if (newType < GRAPHICAL_TYPES.SHIP) this.changeGraphicalType(newType);
+
         this.playType = newType;
         return this;
     }
@@ -39,6 +43,12 @@ export class Ship {
      */
     changeGraphicalType (newType) {
         if (!Object.values(GRAPHICAL_TYPES).includes(newType)) throw new Error('Invalid input: newType must be a graphical type');
+
+        if (this.internalType < INTERNAL_TYPES.SHIP) this.changeInternalType(newType);
+        else if (newType < INTERNAL_TYPES.VERTICAL)  this.changeInternalType(newType);
+
+        // not updating upwards to avoid infinite recurrsion
+
         this.graphicalType = newType;
         return this;
     }
@@ -49,8 +59,20 @@ export class Ship {
      */
     changeInternalType (newType) {
         if (!Object.values(INTERNAL_TYPES).includes(newType)) throw new Error('Invalid input: newType must be a internal type');
+        
+        // not updating upwards to avoid infinite recurrsion
+        
         this.internalType = newType;
         return this;
+    }
+
+    /**
+     * Returns true if the play/graphical/internal type is any type of ship
+     * @param {Number}
+     * @returns {Boolean}
+     */
+    static typeIsShip (type) {
+        return [INTERNAL_TYPES.UKNOWN, INTERNAL_TYPES.WATER].includes(type);
     }
 }
 
@@ -72,6 +94,8 @@ export const PLAY_TYPES = {
 export const GRAPHICAL_TYPES = {
     UKNOWN: 0,
     WATER: 1,
+
+    // ships
     SHIP: 2,
     SINGLE: 3,
     UP: 4,
@@ -87,12 +111,16 @@ export const GRAPHICAL_TYPES = {
 export const INTERNAL_TYPES = {
     UKNOWN: 0,
     WATER: 1,
+
+    // ships
     SHIP: 2,
     SINGLE: 3,
     UP: 4,
     RIGHT: 5,
     DOWN: 6, 
     LEFT: 7,
+
+    // unique from graphical types
     VERTICAL: 8,
     HORIZONTAL: 9,
 }
