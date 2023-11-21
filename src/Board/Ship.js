@@ -68,15 +68,6 @@ export class Ship {
         this.internalType = newType;
         return this;
     }
-
-    /**
-     * Returns true if the play/graphical/internal type is any type of ship
-     * @param {Number}
-     * @returns {Boolean}
-     */
-    static typeIsShip (type) {
-        return [INTERNAL_TYPES.UKNOWN, INTERNAL_TYPES.WATER].includes(type);
-    }
 }
 
 /**
