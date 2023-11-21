@@ -14,49 +14,68 @@ export class Ship {
         switch (this.graphicalType) {
             case 0:
                 return 'Uknown';
-                break;
             case 1:
                 return 'Water';
-                break;
             case 2:
                 return 'Ship';
-                break;
             default:
                 return this.graphicalType
         }
     }
 
     /**
-     * Changes the play type of the ship
-     * @param {Number} newType - The type to change it to
-     * @returns {Ship} The ship object (this)
+     * @param {Number} newType
+     * @returns {Ship} this
      */
     changePlayType (newType) {
         if (!Object.values(PLAY_TYPES).includes(newType)) throw new Error('Invalid input: newType must be a play type');
+        
+        if (this.graphicalType < GRAPHICAL_TYPES.SHIP) this.changeGraphicalType(newType);
+        else if (newType < GRAPHICAL_TYPES.SHIP) this.changeGraphicalType(newType);
+
         this.playType = newType;
         return this;
     }
 
     /**
-     * Changes the graphical type of the ship
-     * @param {Number} newType - The type to change it to
-     * @returns {Ship} The ship object (this)
+     * @param {Number} newType
+     * @returns {Ship} this
      */
     changeGraphicalType (newType) {
         if (!Object.values(GRAPHICAL_TYPES).includes(newType)) throw new Error('Invalid input: newType must be a graphical type');
+
+        if (this.internalType < INTERNAL_TYPES.SHIP) this.changeInternalType(newType);
+        else if (newType < INTERNAL_TYPES.VERTICAL)  this.changeInternalType(newType);
+
+        if (newType < PLAY_TYPES.SHIP) this.playType = newType;
+        else if (newType > PLAY_TYPES.SHIP) this.playType = PLAY_TYPES.SHIP;
+
         this.graphicalType = newType;
         return this;
     }
 
     /**
-     * Changes the internal type of the ship
-     * @param {Number} newType - The type to change it to
-     * @returns {Ship} The ship object (this)
+     * @param {Number} newType
+     * @returns {Ship} this
      */
     changeInternalType (newType) {
         if (!Object.values(INTERNAL_TYPES).includes(newType)) throw new Error('Invalid input: newType must be a internal type');
+        
+        if (newType < GRAPHICAL_TYPES.SHIP) this.graphicalType = newType;
+        else if (newType < INTERNAL_TYPES.VERTICAL) this.graphicalType = newType;
+        else if (newType >= INTERNAL_TYPES.VERTICAL) this.graphicalType = GRAPHICAL_TYPES.SHIP;
+        
         this.internalType = newType;
         return this;
+    }
+
+    /**
+     * Returns true if the play/graphical/internal type is any type of ship
+     * @param {Number}
+     * @returns {Boolean}
+     */
+    static typeIsShip (type) {
+        return [INTERNAL_TYPES.UKNOWN, INTERNAL_TYPES.WATER].includes(type);
     }
 }
 
@@ -78,6 +97,8 @@ export const PLAY_TYPES = {
 export const GRAPHICAL_TYPES = {
     UKNOWN: 0,
     WATER: 1,
+
+    // ships
     SHIP: 2,
     SINGLE: 3,
     UP: 4,
@@ -93,12 +114,16 @@ export const GRAPHICAL_TYPES = {
 export const INTERNAL_TYPES = {
     UKNOWN: 0,
     WATER: 1,
+
+    // ships
     SHIP: 2,
     SINGLE: 3,
     UP: 4,
     RIGHT: 5,
     DOWN: 6, 
     LEFT: 7,
+
+    // unique from graphical types
     VERTICAL: 8,
     HORIZONTAL: 9,
 }

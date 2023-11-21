@@ -4,10 +4,10 @@ import { PLAY_TYPES, Ship } from "./Ship";
 test('board dimensions', () => {
     expect(new Board({ dimensions: [8, 8] }).dimensions).toEqual([8, 8]);
     expect(new Board().dimensions).toEqual([4, 4])
-    expect(() => { new Board({ dimensions: [4, 0] }).dimensions }).toThrow('Invalid input');
-    expect(() => { new Board({ dimensions: [-2, 6] }).dimensions }).toThrow('Invalid input');
-    expect(() => { new Board({ dimensions: [3.14, 5] }).dimensions }).toThrow('Invalid input');
-    expect(() => { new Board({ dimensions: ['4', 5] }).dimensions }).toThrow('Invalid input');
+    expect(() => { new Board({ dimensions: [4, 0] }) }).toThrow('Invalid input');
+    expect(() => { new Board({ dimensions: [-2, 6] }) }).toThrow('Invalid input');
+    expect(() => { new Board({ dimensions: [3.14, 5] }) }).toThrow('Invalid input');
+    expect(() => { new Board({ dimensions: ['4', 5] }) }).toThrow('Invalid input');
 })
 
 test('coordinatesToIndex', () => {
