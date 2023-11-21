@@ -37,9 +37,8 @@ class Board extends React.Component {
     }
 
     /**
-     * Replaces a ship with the supplied one
-     * @param {Array<Number>|Number} position - Which square to change
-     * @param {Ship} value - What to change the square to
+     * @param {Array<Number>|Number} position - Starts at 1 as [x, y] or use index
+     * @param {Ship} value
      */
     setShip (position, value) {
         let index;
@@ -48,16 +47,17 @@ class Board extends React.Component {
         else if (typeof position === 'number') index = position;
         else throw new Error('Invalid input: position must be an index or array of coordinates');
 
-        if (!value instanceof Ship) throw new Error('Invalid input: value must be instance of ship')
+        if (!(value instanceof Ship)) throw new Error('Invalid input: value must be instance of ship')
 
         let tmpBoard = this.state.board;
         tmpBoard[index] = value;
-        this.state.board = tmpBoard;
+        this.setState({
+            board: tmpBoard,
+        });
     }
 
     /**
-     * Get a ship from its position
-     * @param {Array<Number>|Number} position - The position to query
+     * @param {Array<Number>|Number} position - Starts at 1 as [x, y] or use index
      * @returns {Ship}
      */
     getShip (position) {
@@ -71,9 +71,8 @@ class Board extends React.Component {
     }
 
     /**
-     * Convert a pair of coordinates to an index on the board
-     * @param {Array<Number>} coordinates - The coordinates in the form [x, y] (starts at 1)
-     * @returns {Number} The index
+     * @param {Array<Number>} coordinates - Starts at 1 - [x, y]
+     * @returns {Number}
      */
     coordinatesToIndex (coordinates) {
         const [x, y] = coordinates;
