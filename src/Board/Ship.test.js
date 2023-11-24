@@ -19,3 +19,31 @@ test('change types', () => {
         new Ship(PLAY_TYPES.UKNOWN).changeInternalType(10);
     }).toThrow('Invalid input');
 })
+
+test('change types propogation', () => {
+    const ship = new Ship(PLAY_TYPES.UKNOWN);
+
+    ship.changePlayType(PLAY_TYPES.WATER);
+    expect(ship.graphicalType).toBe(GRAPHICAL_TYPES.WATER);
+    expect(ship.internalType).toBe(INTERNAL_TYPES.WATER);
+
+    ship.changePlayType(PLAY_TYPES.SHIP);
+    expect(ship.graphicalType).toBe(GRAPHICAL_TYPES.SHIP);
+    expect(ship.internalType).toBe(INTERNAL_TYPES.SHIP);
+
+    ship.changeGraphicalType(GRAPHICAL_TYPES.LEFT);
+    expect(ship.playType).toBe(PLAY_TYPES.SHIP);
+    expect(ship.internalType).toBe(INTERNAL_TYPES.LEFT);
+
+    ship.changeGraphicalType(PLAY_TYPES.WATER);
+    expect(ship.playType).toBe(PLAY_TYPES.WATER);
+    expect(ship.internalType).toBe(INTERNAL_TYPES.WATER);
+
+    ship.changeInternalType(INTERNAL_TYPES.VERTICAL);
+    expect(ship.playType).toBe(PLAY_TYPES.SHIP);
+    expect(ship.graphicalType).toBe(GRAPHICAL_TYPES.SHIP);
+
+    ship.changeInternalType(INTERNAL_TYPES.UKNOWN);
+    expect(ship.playType).toBe(PLAY_TYPES.UKNOWN);
+    expect(ship.graphicalType).toBe(GRAPHICAL_TYPES.UKNOWN);
+})
