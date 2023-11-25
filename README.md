@@ -2,7 +2,6 @@
 [![CI - tests](https://github.com/rpschedule/battleship-solitare/actions/workflows/jest.yml/badge.svg)](https://github.com/rpschedule/battleship-solitare/actions/workflows/jest.yml)
 
 TODO: 
-- [ ] create dev documentation
 - [ ] functions to get surrounding ships
 - [ ] add styling to webpage
 - [ ] make it playable (left/right click functions)
@@ -17,3 +16,4 @@ TODO:
 - [ ] add an online coop mode
 - [ ] add an online tourney mode
 - [ ] add an online private/friend mode
+- [ ] add dev documentation
