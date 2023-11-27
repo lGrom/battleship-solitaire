@@ -159,7 +159,7 @@ export default class Board extends React.Component {
     }
 }
 
-export const RealtivePositions = {
+export const RelativePositions = {
     TOP_LEFT: 0,
     TOP: 1,
     TOP_RIGHT: 2,
