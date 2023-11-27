@@ -83,6 +83,7 @@ export default class Board extends React.Component {
     /**
      * @param {Array<Number>|Number} position - An index or array starting at 1 as [x, y]
      * @param {Ship} value
+     * @returns {Board} this
      */
     setShip (position, value) {
         const index = this.positionToIndex(position);
@@ -94,6 +95,8 @@ export default class Board extends React.Component {
         this.setState({
             board: tmpBoard,
         });
+
+        return this;
     }
 
     /**
@@ -126,6 +129,7 @@ export default class Board extends React.Component {
      * @param {Array<Number>|Number} position - An index or array starting at 1 as [x, y]
      * @param {Number} relativePosition - The index relative to position
      * @param {Ship} value
+     * @returns {Board} this
      */
     setRelativeShip (position, relativePosition, value) {
         const index = this.relativePositionToIndex(position, relativePosition);
@@ -138,6 +142,8 @@ export default class Board extends React.Component {
         this.setState({
             board: tmpBoard,
         });
+
+        return this;
     }
 
     displayBoard () {
