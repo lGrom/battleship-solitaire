@@ -1,32 +1,38 @@
 import React from "react";
 import {Ship, PLAY_TYPES} from "./Ship";
 
-class Board extends React.Component {
+export default class Board extends React.Component {
     constructor (props) {
         super(props);
 
-        const defaultDimensions = [4, 4]
+        const defaultWidth = 4;
+        const defaultHeight = 4;
+
+        // asign width and height if present, else use defaults
         if (this.props) {
             if (
-                this.props.dimensions.length === 2 &&
-                typeof this.props.dimensions[0] == 'number' &&
-                typeof this.props.dimensions[1] == 'number' &&
-                Number.isInteger(this.props.dimensions[0]) &&
-                Number.isInteger(this.props.dimensions[1]) &&
-                this.props.dimensions[0] > 0 &&
-                this.props.dimensions[1] > 0
+                (this.props.width ||
+                this.props.height) &&
+                typeof this.props.width == 'number' &&
+                typeof this.props.height == 'number' &&
+                Number.isInteger(this.props.width) &&
+                Number.isInteger(this.props.height) &&
+                this.props.width > 0 &&
+                this.props.height > 0
             ) {
-                this.dimensions = this.props.dimensions;
+                this.width = this.props.width || defaultWidth;
+                this.height = this.props.height || defaultHeight;
             } else {
-                throw new Error('Invalid input: dimensions should be 2 item long array of integers greater than zero')
+                throw new Error('Invalid input: width and height must be positive integers')
             }
         } else {
-            this.dimensions = defaultDimensions;
+            this.width = defaultWidth;
+            this.height = defaultHeight;
         }
 
         let tmpBoard = [];
-        for (let i = 0; i < this.dimensions[0]; i++) {
-            for (let j = 0; j < this.dimensions[1]; j++) {
+        for (let i = 0; i < this.width; i++) {
+            for (let j = 0; j < this.height; j++) {
                 tmpBoard.push(new Ship(PLAY_TYPES.UKNOWN));
             }
         }
@@ -37,17 +43,51 @@ class Board extends React.Component {
     }
 
     /**
-     * @param {Array<Number>|Number} position - Starts at 1 as [x, y] or use index
+     * @param {Array<Number>} coordinates - An array starting at 1 as [x, y]
+     * @returns {Number}
+     */
+    coordinatesToIndex (coordinates) {
+        const [x, y] = coordinates;
+
+        if (x > this.width || y > this.height) {
+            throw new Error('Invalid input: coordinates must not exceed board dimensions');
+        }
+
+        if (!Number.isInteger(x) || !Number.isInteger(y)) {
+            throw new Error('Invalid input: coordinates must be integers');
+        }
+
+        // paranthesis for legability 
+        return (x - 1) + (y * (this.width - 1) - 1);
+    }
+
+    /**
+     * @param {Array<Number>|Number} position - An index or array starting at 1 as [x, y]
+     * @returns {Number}
+     */
+    positionToIndex (position) {
+        if (typeof position === 'number') return position;
+        if (Array.isArray(position)) return this.coordinatesToIndex(position);
+        throw new Error('Invalid input: position must be an index or array of coordinates');
+    }
+
+    /**
+     * @param {Array<Number>|Number} position - An index or array starting at 1 as [x, y]
+     * @returns {Ship}
+     */
+    getShip (position) {
+        const index = this.positionToIndex(position);
+        return this.state.board[index];
+    }
+
+    /**
+     * @param {Array<Number>|Number} position - An index or array starting at 1 as [x, y]
      * @param {Ship} value
      */
     setShip (position, value) {
-        let index;
+        const index = this.positionToIndex(position);
 
-        if (Array.isArray(position)) index = this.coordinatesToIndex(position);
-        else if (typeof position === 'number') index = position;
-        else throw new Error('Invalid input: position must be an index or array of coordinates');
-
-        if (!(value instanceof Ship)) throw new Error('Invalid input: value must be instance of ship')
+        if (!(value instanceof Ship)) throw new Error('Invalid input: value must be instance of ship');
 
         let tmpBoard = this.state.board;
         tmpBoard[index] = value;
@@ -57,36 +97,47 @@ class Board extends React.Component {
     }
 
     /**
-     * @param {Array<Number>|Number} position - Starts at 1 as [x, y] or use index
-     * @returns {Ship}
+     * Converts a relative position to an absolute index
+     * @param {Array<Number>|Number} - An index or array starting at 1 as [x, y]
+     * @param {Number} relativeIndex - The index relative to position
+     * @returns {Number} The absolute index
      */
-    getShip (position) {
-        let index;
+    relativePositionToIndex (position, relativePosition) {
+        // rp is short for relative position
+        const rp = Math.floor(relativePosition);
+        const offset = rp % 3 + Math.floor(rp/3 - 1) * this.width;
+        const index = this.positionToIndex(position) + offset;
 
-        if (Array.isArray(position)) index = this.coordinatesToIndex(position);
-        else if (typeof position === 'number') index = position;
-        else throw new Error('Invalid input: position must be an index or array of coordinates');
-
-        return this.state.board[index];
+        if (index < 0 || index > this.width * this.height - 1) return null;
+        return index;
     }
 
     /**
-     * @param {Array<Number>} coordinates - Starts at 1 - [x, y]
-     * @returns {Number}
+     * @param {Array<Number>|Number} position - An index or array starting at 1 as [x, y]
+     * @param {Number} relativePosition - The index relative to position
+     * @returns {Ship}
      */
-    coordinatesToIndex (coordinates) {
-        const [x, y] = coordinates;
+    getRelativeShip (position, relativePosition) {
+        const index = this.relativePositionToIndex(position, relativePosition);
+        return (index !== null) ? this.state.board[index] : null;
+    }
 
-        if (x > this.dimensions[0] || y > this.dimensions[1]) {
-            throw new Error('Invalid input: coordinates must not exceed board dimensions');
-        }
+    /**
+     * @param {Array<Number>|Number} position - An index or array starting at 1 as [x, y]
+     * @param {Number} relativePosition - The index relative to position
+     * @param {Ship} value
+     */
+    setRelativeShip (position, relativePosition, value) {
+        const index = this.relativePositionToIndex(position, relativePosition);
 
-        if (!Number.isInteger(x) || !Number.isInteger(y)) {
-            throw new Error('Invalid input: coordinates must be integers');
-        }
+        if (!(value instanceof Ship)) throw new Error('Invalid input: value must be instance of ship');
+        if (index === null) throw new Error('Index is not within board dimensions')
 
-        // paranthesis for legability 
-        return (x - 1) + (y * (this.dimensions[0] - 1) - 1);
+        let tmpBoard = this.state.board;
+        tmpBoard[index] = value;
+        this.setState({
+            board: tmpBoard,
+        });
     }
 
     displayBoard () {
@@ -102,4 +153,14 @@ class Board extends React.Component {
     }
 }
 
-export default Board;
+export const RealtivePositions = {
+    TOP_LEFT: 0,
+    TOP: 1,
+    TOP_RIGHT: 2,
+    LEFT: 3,
+    // CENTER: 4, (this)
+    RIGHT: 5,
+    BOTTOM_LEFT: 6,
+    BOTTOM: 7,
+    BOTTOM_RIGHT: 8,
+}

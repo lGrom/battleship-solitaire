@@ -1,5 +1,5 @@
 /* eslint-disable no-unused-expressions */
-export class Ship {
+export default class Ship {
     playType;
     graphicalType;
     internalType;
