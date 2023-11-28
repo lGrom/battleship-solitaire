@@ -1,4 +1,4 @@
-import { GRAPHICAL_TYPES, INTERNAL_TYPES, PLAY_TYPES, Ship } from "./Ship"
+import Ship, { GRAPHICAL_TYPES, INTERNAL_TYPES, PLAY_TYPES } from "./Ship"
 
 test('change types', () => {
     // play types

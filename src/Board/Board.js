@@ -1,5 +1,5 @@
 import React from "react";
-import {Ship, PLAY_TYPES} from "./Ship";
+import Ship, { PLAY_TYPES } from "./Ship";
 
 export default class Board extends React.Component {
     constructor (props) {
@@ -66,7 +66,7 @@ export default class Board extends React.Component {
      * @returns {Number}
      */
     positionToIndex (position) {
-        if (typeof position === 'number') return position;
+        if (typeof position === 'number' && position >= 0) return position;
         if (Array.isArray(position)) return this.coordinatesToIndex(position);
         throw new Error('Invalid input: position must be an index or array of coordinates');
     }
