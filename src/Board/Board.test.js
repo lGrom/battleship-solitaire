@@ -16,6 +16,7 @@ test('coordinatesToIndex', () => {
     expect(() => { new Board({ width: 8, height: 8 }).coordinatesToIndex([5.6, 7.2]) }).toThrow('Invalid input');
     expect(() => { new Board({ width: 8, height: 8 }).coordinatesToIndex([5.6, 7]) }).toThrow('Invalid input');
     expect(new Board({ width: 8, height: 8 }).coordinatesToIndex([5, 7])).toBe(52);
+    expect(new Board({ width: 4, height: 4 }).coordinatesToIndex([1, 2])).toBe(4)
 });
 
 test('setShip', () => {
@@ -40,7 +41,9 @@ test('getShip', () => {
 test('relativePositionToIndex', () => {
     const board = new Board({ width: 4, height: 4 });
 
-    expect(board.relativePositionToIndex([2, 3], RelativePositions.RIGHT)).toEqual(10);
+    expect(board.relativePositionToIndex([2, 3], RelativePositions.RIGHT)).toBe(10);
+    expect(board.relativePositionToIndex([2, 3], RelativePositions.TOP_LEFT)).toBe(4);
+    expect(board.relativePositionToIndex([2, 3], RelativePositions.BOTTOM)).toBe(13);
 })
 
 test('setRelativeShip', () => {

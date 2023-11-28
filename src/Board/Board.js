@@ -58,7 +58,7 @@ export default class Board extends React.Component {
         }
 
         // paranthesis for legability 
-        return (x - 1) + (y * (this.width - 1) - 1);
+        return ((y - 1) * this.width) + (x - 1)
     }
 
     /**
@@ -108,11 +108,18 @@ export default class Board extends React.Component {
     relativePositionToIndex (position, relativePosition) {
         // rp is short for relative position
         const rp = Math.floor(relativePosition);
-        const offset = rp % 3 + Math.floor(rp/3 - 1) * this.width;
-        const index = this.positionToIndex(position) + offset;
+        const index = this.positionToIndex(position);
 
-        if (index < 0 || index > this.width * this.height - 1) return null;
-        return index;
+        // prevent wrap-around on the sides
+        if (index % this.width === 0 && relativePosition % 3 === 0) return null;
+        if (index % this.width === this.width - 1 && relativePosition % 3 === 2) return null;
+
+        const absIndex = (index) + ((Math.floor(rp / 3) - 1) * this.width) + (rp % 3 - 1)
+
+        // check absIndex is within the board
+        if (absIndex < 0 || absIndex > this.width * this.height - 1) return null;
+        
+        return absIndex;
     }
 
     /**
