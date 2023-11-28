@@ -1,8 +1,9 @@
-import { Board, RelativePositions } from "./Board";
-import { Ship, PLAY_TYPES } from "./Ship";
+import Board, { RelativePositions } from "./Board";
+import Ship, { PLAY_TYPES } from "./Ship";
 
 test('board dimensions', () => {
-    expect(new Board({ width: 8, height: 8 }).dimensions).toEqual([8, 8]);
+    expect(new Board({ width: 8, height: 8 }).width).toEqual(8);
+    expect(new Board({ width: 8, height: 8 }).height).toEqual(8);
     expect(() => { new Board({ width: 4, height: 0 }) }).toThrow('Invalid input');
     expect(() => { new Board({ width: -2, height: 5 }) }).toThrow('Invalid input');
     expect(() => { new Board({ width: 3.14, height: 5 }) }).toThrow('Invalid input');
@@ -32,17 +33,23 @@ test('getShip', () => {
     expect(board.getShip([1, 2])).toEqual(ship);
     expect(board.getShip(0)).toEqual(ship);
     
-    expect(() => { board.getShip(-1)}).toThrow('')
-    expect(() => { board.getShip([5, 4])}).toThrow('')
+    expect(() => { board.getShip(-1)}).toThrow('index')
+    expect(() => { board.getShip([5, 4])}).toThrow('coordinates')
+})
+
+test('relativePositionToIndex', () => {
+    const board = new Board({ width: 4, height: 4 });
+
+    expect(board.relativePositionToIndex([2, 3], RelativePositions.RIGHT)).toEqual(10);
 })
 
 test('setRelativeShip', () => {
     const board = new Board({ width: 4, height: 4 });
     const ship = new Ship(PLAY_TYPES.SHIP);
 
-    expect(board.setRelativeShip([2, 3], RelativePositions.TOP_LEFT, ship).getShip([1, 2])).toBe(Ship);
-    expect(board.setRelativeShip([2, 3], RelativePositions.RIGHT, ship).getShip([3, 3])).toBe(Ship);
-    expect(board.setRelativeShip([2, 3], RelativePositions.BOTTOM, ship).getShip([2, 4])).toBe(Ship);
+    expect(board.setRelativeShip([2, 3], RelativePositions.TOP_LEFT, ship).getShip([1, 2])).toEqual(ship);
+    expect(board.setRelativeShip([2, 3], RelativePositions.RIGHT, ship).getShip([3, 3])).toEqual(ship);
+    expect(board.setRelativeShip([2, 3], RelativePositions.BOTTOM, ship).getShip([2, 4])).toEqual(ship);
 })
 
 test('getRelativeShip', () => {
