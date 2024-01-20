@@ -1,5 +1,6 @@
 import Board, { RelativePositions } from "./Board";
 import Ship, { PLAY_TYPES } from "./Ship";
+import { act } from 'react-dom/test-utils';
 
 test('board dimensions', () => {
     expect(new Board({ width: 8, height: 8 }).width).toEqual(8);
@@ -16,16 +17,20 @@ test('coordinatesToIndex', () => {
     expect(() => { new Board({ width: 8, height: 8 }).coordinatesToIndex([5.6, 7.2]) }).toThrow('Invalid input');
     expect(() => { new Board({ width: 8, height: 8 }).coordinatesToIndex([5.6, 7]) }).toThrow('Invalid input');
     expect(new Board({ width: 8, height: 8 }).coordinatesToIndex([5, 7])).toBe(52);
-    expect(new Board({ width: 4, height: 4 }).coordinatesToIndex([1, 2])).toBe(4)
+    expect(new Board({ width: 4, height: 4 }).coordinatesToIndex([1, 2])).toBe(4);
 });
 
-test('setShip', () => {
+test('setShip', async () => {
     const board = new Board({ width: 8, height: 8 });
     const ship = new Ship(PLAY_TYPES.WATER);
-    board.setShip([1, 4], ship);
-
+  
+    await act(async () => {
+      await board.setShip([1, 4], ship);
+    });
+  
     expect(board.state.board[board.coordinatesToIndex([1, 4])]).toEqual(ship);
-})
+  });
+  
 
 test('getShip', () => {
     const board = new Board({ width: 4, height: 4 });
@@ -34,8 +39,8 @@ test('getShip', () => {
     expect(board.getShip([1, 2])).toEqual(ship);
     expect(board.getShip(0)).toEqual(ship);
     
-    expect(() => { board.getShip(-1)}).toThrow('index')
-    expect(() => { board.getShip([5, 4])}).toThrow('coordinates')
+    expect(() => { board.getShip(-1)}).toThrow('index');
+    expect(() => { board.getShip([5, 4])}).toThrow('coordinates');
 })
 
 test('relativePositionToIndex', () => {
