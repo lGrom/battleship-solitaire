@@ -2,7 +2,7 @@
 [![CI - tests](https://github.com/rpschedule/battleship-solitare/actions/workflows/jest.yml/badge.svg)](https://github.com/rpschedule/battleship-solitare/actions/workflows/jest.yml)
 
 TODO: 
-- [ ] functions to get surrounding ships
+- [X] functions to get surrounding ships
 - [ ] add styling to webpage
 - [ ] make it playable (left/right click functions)
 - [ ] add support for pre-existing ships
