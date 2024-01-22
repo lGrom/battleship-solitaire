@@ -10,7 +10,7 @@ export default class Board extends React.Component {
         const defaultHeight = 4;
 
         // asign width and height if present, else use defaults
-        if (this.props.height || this.props.width) {
+        if (this.props && (this.props.height || this.props.width)) {
             if (
                 typeof this.props.width == 'number' &&
                 typeof this.props.height == 'number' &&
@@ -152,24 +152,13 @@ export default class Board extends React.Component {
         return this;
     }
 
-    handleLeftClick (index) {
-        console.log('left');
-    }
-
-    handleRightClick (index) {
-        console.log('right');
-    }
-
     handleClick (event, index) {
-        switch (event.button) {
-            case 0: 
-                this.handleLeftClick(index);
-                break;
-            case 2:
-                this.handleRightClick(index);
-                break;
-            default: 
-                break;
+        if (event.button === 0 || event.button === 2) {
+            const ship = this.getShip(index);
+            // this makes it +1 for left click and +2 for right click (which basically works as -1)
+            const newType = (ship.playType + 1 + event.button / 2) % 3
+            ship.setPlayType(newType);
+            this.setShip(index, ship)
         }
     }
 
@@ -178,7 +167,7 @@ export default class Board extends React.Component {
             return <div 
                 className="Square nohighlight"
                 key={index}
-                onMouseDown={(event) => this.handleClick(event, index)}
+                onMouseUp={(event) => this.handleClick(event, index)}
                 onContextMenu={(e) => e.preventDefault()}
             >
                 {ship.toString()}

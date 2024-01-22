@@ -11,15 +11,15 @@ export default class Ship {
     }
 
     toString() {
-        switch (this.graphicalType) {
-            case 0:
+        switch (this.playType) {
+            case PLAY_TYPES.UKNOWN:
                 return 'Uknown';
-            case 1:
+            case PLAY_TYPES.WATER:
                 return 'Water';
-            case 2:
+            case PLAY_TYPES.SHIP:
                 return 'Ship';
             default:
-                return this.graphicalType
+                return this.playType
         }
     }
 
@@ -27,11 +27,11 @@ export default class Ship {
      * @param {Number} newType
      * @returns {Ship} this
      */
-    changePlayType (newType) {
+    setPlayType (newType) {
         if (!Object.values(PLAY_TYPES).includes(newType)) throw new Error('Invalid input: newType must be a play type');
         
-        if (this.graphicalType < GRAPHICAL_TYPES.SHIP) this.changeGraphicalType(newType);
-        else if (newType < GRAPHICAL_TYPES.SHIP) this.changeGraphicalType(newType);
+        if (this.graphicalType < GRAPHICAL_TYPES.SHIP) this.setGraphicalType(newType);
+        else if (newType < GRAPHICAL_TYPES.SHIP) this.setGraphicalType(newType);
 
         this.playType = newType;
         return this;
@@ -41,11 +41,11 @@ export default class Ship {
      * @param {Number} newType
      * @returns {Ship} this
      */
-    changeGraphicalType (newType) {
+    setGraphicalType (newType) {
         if (!Object.values(GRAPHICAL_TYPES).includes(newType)) throw new Error('Invalid input: newType must be a graphical type');
 
-        if (this.internalType < INTERNAL_TYPES.SHIP) this.changeInternalType(newType);
-        else if (newType < INTERNAL_TYPES.VERTICAL)  this.changeInternalType(newType);
+        if (this.internalType < INTERNAL_TYPES.SHIP) this.setInternalType(newType);
+        else if (newType < INTERNAL_TYPES.VERTICAL)  this.setInternalType(newType);
 
         if (newType < PLAY_TYPES.SHIP) this.playType = newType;
         else if (newType > PLAY_TYPES.SHIP) this.playType = PLAY_TYPES.SHIP;
@@ -58,7 +58,7 @@ export default class Ship {
      * @param {Number} newType
      * @returns {Ship} this
      */
-    changeInternalType (newType) {
+    setInternalType (newType) {
         if (!Object.values(INTERNAL_TYPES).includes(newType)) throw new Error('Invalid input: newType must be a internal type');
         
         if (newType < INTERNAL_TYPES.SHIP) this.graphicalType = newType;
