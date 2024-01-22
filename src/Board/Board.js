@@ -1,5 +1,6 @@
 import React from "react";
 import Ship, { PLAY_TYPES } from "./Ship";
+import "./Board.css";
 
 export default class Board extends React.Component {
     constructor (props) {
@@ -9,10 +10,8 @@ export default class Board extends React.Component {
         const defaultHeight = 4;
 
         // asign width and height if present, else use defaults
-        if (this.props) {
+        if (this.props.height || this.props.width) {
             if (
-                (this.props.width ||
-                this.props.height) &&
                 typeof this.props.width == 'number' &&
                 typeof this.props.height == 'number' &&
                 Number.isInteger(this.props.width) &&
@@ -153,13 +152,43 @@ export default class Board extends React.Component {
         return this;
     }
 
+    handleLeftClick (index) {
+        console.log('left');
+    }
+
+    handleRightClick (index) {
+        console.log('right');
+    }
+
+    handleClick (event, index) {
+        switch (event.button) {
+            case 0: 
+                this.handleLeftClick(index);
+                break;
+            case 2:
+                this.handleRightClick(index);
+                break;
+            default: 
+                break;
+        }
+    }
+
     displayBoard () {
-        return this.state.board.map((ship) => {return <p>{ship.toString()}</p>});
+        return this.state.board.map((ship, index) => {
+            return <div 
+                className="Square nohighlight"
+                key={index}
+                onMouseDown={(event) => this.handleClick(event, index)}
+                onContextMenu={(e) => e.preventDefault()}
+            >
+                {ship.toString()}
+            </div>
+        });
     }
 
     render () {
         return (
-            <div> 
+            <div className="Board"> 
                 {this.displayBoard()}
             </div>
         )
