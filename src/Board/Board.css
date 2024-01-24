@@ -1,0 +1,12 @@
+.Board {
+    display: grid;
+    grid-template: repeat(4, 100px) / repeat(4, 100px);
+}
+
+.Square {
+    border: 1px solid white;
+}
+
+.Square:hover {
+    cursor: pointer;
+}
