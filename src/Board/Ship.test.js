@@ -1,4 +1,5 @@
-import Ship, { GRAPHICAL_TYPES, INTERNAL_TYPES, PLAY_TYPES } from "./Ship"
+/* eslint-disable no-undef */
+import Ship, { GRAPHICAL_TYPES, INTERNAL_TYPES, PLAY_TYPES } from './Ship';
 
 test('set types', () => {
     // play types
@@ -18,7 +19,7 @@ test('set types', () => {
     expect(() => {
         new Ship(PLAY_TYPES.UKNOWN).setInternalType(10);
     }).toThrow('Invalid input');
-})
+});
 
 test('set types propogation', () => {
     const ship = new Ship(PLAY_TYPES.UKNOWN);
@@ -46,4 +47,4 @@ test('set types propogation', () => {
     ship.setInternalType(INTERNAL_TYPES.UKNOWN);
     expect(ship.playType).toBe(PLAY_TYPES.UKNOWN);
     expect(ship.graphicalType).toBe(GRAPHICAL_TYPES.UKNOWN);
-})
+});

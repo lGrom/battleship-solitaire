@@ -1,44 +1,17 @@
-import React from 'react';
 import Ship, { PLAY_TYPES } from './Ship';
-import './Board.css';
 
-export default class Board extends React.Component {
-    constructor (props) {
-        super(props);
+export default class BoardBuilder {
+    constructor (width, height) {
+        // removed many checks for brevity's sake
+        this.width = width ?? 4;
+        this.height = height ?? 4;
 
-        const defaultWidth = 4;
-        const defaultHeight = 4;
-
-        // asign width and height if present, else use defaults
-        if (this.props && (this.props.height || this.props.width)) {
-            if (
-                typeof this.props.width === 'number' &&
-                typeof this.props.height === 'number' &&
-                Number.isInteger(this.props.width) &&
-                Number.isInteger(this.props.height) &&
-                this.props.width > 0 &&
-                this.props.height > 0
-            ) {
-                this.width = this.props.width || defaultWidth;
-                this.height = this.props.height || defaultHeight;
-            } else {
-                throw new Error('Invalid input: width and height must be positive integers');
-            }
-        } else {
-            this.width = defaultWidth;
-            this.height = defaultHeight;
-        }
-
-        const tmpBoard = [];
+        this.boardState = [];
         for (let i = 0; i < this.width; i++) {
             for (let j = 0; j < this.height; j++) {
-                tmpBoard.push(new Ship(PLAY_TYPES.UKNOWN));
+                this.boardState.push(new Ship(PLAY_TYPES.UKNOWN));
             }
         }
-
-        this.state = {
-            board: tmpBoard
-        };
     }
 
     /**
@@ -76,7 +49,7 @@ export default class Board extends React.Component {
      */
     getShip (position) {
         const index = this.positionToIndex(position);
-        return this.state.board[index];
+        return this.boardState[index];
     }
 
     /**
@@ -89,11 +62,9 @@ export default class Board extends React.Component {
 
         if (!(value instanceof Ship)) throw new Error('Invalid input: value must be instance of ship');
 
-        const tmpBoard = this.state.board;
+        const tmpBoard = this.boardState;
         tmpBoard[index] = value;
-        this.setState({
-            board: tmpBoard
-        });
+        this.boardState = tmpBoard;
 
         return this;
     }
@@ -105,15 +76,13 @@ export default class Board extends React.Component {
      * @returns {Number} The absolute index
      */
     relativePositionToIndex (position, relativePosition) {
-        // rp is short for relative position
-        const rp = Math.floor(relativePosition);
         const index = this.positionToIndex(position);
 
         // prevent wrap-around on the sides
         if (index % this.width === 0 && relativePosition % 3 === 0) return null;
         if (index % this.width === this.width - 1 && relativePosition % 3 === 2) return null;
 
-        const absIndex = (index) + ((Math.floor(rp / 3) - 1) * this.width) + (rp % 3 - 1);
+        const absIndex = (index) + ((Math.floor(relativePosition / 3) - 1) * this.width) + (relativePosition % 3 - 1);
 
         // check absIndex is within the board
         if (absIndex < 0 || absIndex > this.width * this.height - 1) return null;
@@ -128,7 +97,7 @@ export default class Board extends React.Component {
      */
     getRelativeShip (position, relativePosition) {
         const index = this.relativePositionToIndex(position, relativePosition);
-        return (index !== null) ? this.state.board[index] : null;
+        return (index !== null) ? this.boardState[index] : null;
     }
 
     /**
@@ -143,11 +112,9 @@ export default class Board extends React.Component {
         if (!(value instanceof Ship)) throw new Error('Invalid input: value must be instance of ship');
         if (index === null) throw new Error('Index is not within board dimensions');
 
-        const tmpBoard = this.state.board;
+        const tmpBoard = this.boardState;
         tmpBoard[index] = value;
-        this.setState({
-            board: tmpBoard
-        });
+        this.boardState = tmpBoard;
 
         return this;
     }
@@ -163,7 +130,7 @@ export default class Board extends React.Component {
     }
 
     displayBoard () {
-        return this.state.board.map((ship, index) => {
+        return this.boardState.map((ship, index) => {
             return <div
                 className="Square nohighlight"
                 key={index}
@@ -173,14 +140,6 @@ export default class Board extends React.Component {
                 {ship.toString()}
             </div>;
         });
-    }
-
-    render () {
-        return (
-            <div className="Board">
-                {this.displayBoard()}
-            </div>
-        );
     }
 }
 
