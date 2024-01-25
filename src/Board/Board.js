@@ -1,44 +1,16 @@
 import React from 'react';
 import Ship, { PLAY_TYPES } from './Ship';
 import './Board.css';
+import BoardBuilder from './BoardBuilder';
 
 export default class Board extends React.Component {
     constructor (props) {
         super(props);
 
-        const defaultWidth = 4;
-        const defaultHeight = 4;
-
-        // asign width and height if present, else use defaults
-        if (this.props && (this.props.height || this.props.width)) {
-            if (
-                typeof this.props.width === 'number' &&
-                typeof this.props.height === 'number' &&
-                Number.isInteger(this.props.width) &&
-                Number.isInteger(this.props.height) &&
-                this.props.width > 0 &&
-                this.props.height > 0
-            ) {
-                this.width = this.props.width || defaultWidth;
-                this.height = this.props.height || defaultHeight;
-            } else {
-                throw new Error('Invalid input: width and height must be positive integers');
-            }
-        } else {
-            this.width = defaultWidth;
-            this.height = defaultHeight;
-        }
-
-        const tmpBoard = [];
-        for (let i = 0; i < this.width; i++) {
-            for (let j = 0; j < this.height; j++) {
-                tmpBoard.push(new Ship(PLAY_TYPES.UKNOWN));
-            }
-        }
-
+        // ill fidle with the react stuff later. for now, I'll add pre-existing ships to BoardBuiler
         this.state = {
-            board: tmpBoard
-        };
+            board: new BoardBuilder(this.props.width, this.props.height),
+        }
     }
 
     /**
@@ -85,6 +57,7 @@ export default class Board extends React.Component {
      * @returns {Board} this
      */
     setShip (position, value) {
+        // make this work with playtypes instead of a full ship object
         const index = this.positionToIndex(position);
 
         if (!(value instanceof Ship)) throw new Error('Invalid input: value must be instance of ship');
