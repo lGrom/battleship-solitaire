@@ -1,24 +1,26 @@
 import Ship, { PLAY_TYPES } from './Ship';
 
+/**
+ * The underlying Board class
+ * @param {Number} width Width in squares
+ * @param {Number} height Height in squares
+ * @param {BoardBuilder} [preset] Pre-existing ships
+ */
 export default class BoardBuilder {
-    constructor (width, height) {
-        // removed many checks for brevity's sake
+    constructor(width, height, preset) {
+        // removed checks for brevity's sake
         this.width = width ?? 4;
         this.height = height ?? 4;
+        this.preset = preset;
 
-        this.boardState = [];
-        for (let i = 0; i < this.width; i++) {
-            for (let j = 0; j < this.height; j++) {
-                this.boardState.push(new Ship(PLAY_TYPES.UKNOWN));
-            }
-        }
+        this.boardState = createBoardState(this.width, this.height, this.preset);
     }
 
     /**
      * @param {Array<Number>} coordinates - An array starting at 1 as [x, y]
      * @returns {Number}
      */
-    coordinatesToIndex (coordinates) {
+    coordinatesToIndex(coordinates) {
         const [x, y] = coordinates;
 
         if (x > this.width || y > this.height) {
@@ -37,7 +39,7 @@ export default class BoardBuilder {
      * @param {Array<Number>|Number} position - An index or array starting at 1 as [x, y]
      * @returns {Number}
      */
-    positionToIndex (position) {
+    positionToIndex(position) {
         if (typeof position === 'number' && position >= 0) return position;
         if (Array.isArray(position)) return this.coordinatesToIndex(position);
         throw new Error('Invalid input: position must be an index or array of coordinates');
@@ -47,7 +49,7 @@ export default class BoardBuilder {
      * @param {Array<Number>|Number} position - An index or array starting at 1 as [x, y]
      * @returns {Ship}
      */
-    getShip (position) {
+    getShip(position) {
         const index = this.positionToIndex(position);
         return this.boardState[index];
     }
@@ -57,7 +59,7 @@ export default class BoardBuilder {
      * @param {Ship} value
      * @returns {Board} this
      */
-    setShip (position, value) {
+    setShip(position, value) {
         const index = this.positionToIndex(position);
 
         if (!(value instanceof Ship)) throw new Error('Invalid input: value must be instance of ship');
@@ -75,7 +77,7 @@ export default class BoardBuilder {
      * @param {Number} relativeIndex - The index relative to position
      * @returns {Number} The absolute index
      */
-    relativePositionToIndex (position, relativePosition) {
+    relativePositionToIndex(position, relativePosition) {
         const index = this.positionToIndex(position);
 
         // prevent wrap-around on the sides
@@ -95,7 +97,7 @@ export default class BoardBuilder {
      * @param {Number} relativePosition - The index relative to position
      * @returns {Ship}
      */
-    getRelativeShip (position, relativePosition) {
+    getRelativeShip(position, relativePosition) {
         const index = this.relativePositionToIndex(position, relativePosition);
         return (index !== null) ? this.boardState[index] : null;
     }
@@ -106,7 +108,7 @@ export default class BoardBuilder {
      * @param {Ship} value
      * @returns {Board} this
      */
-    setRelativeShip (position, relativePosition, value) {
+    setRelativeShip(position, relativePosition, value) {
         const index = this.relativePositionToIndex(position, relativePosition);
 
         if (!(value instanceof Ship)) throw new Error('Invalid input: value must be instance of ship');
@@ -119,7 +121,7 @@ export default class BoardBuilder {
         return this;
     }
 
-    handleClick (event, index) {
+    handleClick(event, index) {
         if (event.button === 0 || event.button === 2) {
             const ship = this.getShip(index);
             // this makes it +1 for left click and +2 for right click (which basically works as -1)
@@ -129,7 +131,7 @@ export default class BoardBuilder {
         }
     }
 
-    displayBoard () {
+    displayBoard() {
         return this.boardState.map((ship, index) => {
             return <div
                 className="Square nohighlight"
@@ -154,3 +156,23 @@ export const RelativePositions = {
     BOTTOM: 7,
     BOTTOM_RIGHT: 8
 };
+
+/**
+ * Creates the boardState array
+ * @param {BoardBuilder} [preset]
+ * @returns {Ship[]} 
+ */
+function createBoardState(width, height, preset) {
+    if (preset) return preset.boardState;
+    else {
+        const out = [];
+
+        for (let i = 0; i < width; i++) {
+            for (let j = 0; j < height; j++) {
+                out.push(new Ship(PLAY_TYPES.UKNOWN));
+            }
+        }
+
+        return out;
+    }
+}
