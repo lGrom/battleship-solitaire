@@ -8,6 +8,12 @@ test('board dimensions', () => {
     expect(new BoardBuilder(8, 8).height).toEqual(8);
 });
 
+test('pre-existing ships', () => {
+    const preset = new BoardBuilder(4, 4).setShip([2, 3], new Ship(PLAY_TYPES.SHIP)).setShip([1, 1], new Ship(PLAY_TYPES.WATER));
+    expect(new BoardBuilder(4, 4, preset).boardState[0]).toStrictEqual(new Ship(PLAY_TYPES.WATER));
+    expect(new BoardBuilder(4, 4, preset).boardState[9]).toStrictEqual(new Ship(PLAY_TYPES.SHIP));
+});
+
 test('coordinatesToIndex', () => {
     expect(() => { new BoardBuilder().coordinatesToIndex([5, 7]); }).toThrow('Invalid input');
     expect(() => { new BoardBuilder(8, 8).coordinatesToIndex([5, 7.2]); }).toThrow('Invalid input');
