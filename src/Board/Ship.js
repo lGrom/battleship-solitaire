@@ -10,16 +10,16 @@ export default class Ship {
         this.internalType = internalType || this.playType;
     }
 
-    toString() {
+    toString () {
         switch (this.playType) {
-            case PLAY_TYPES.UKNOWN:
-                return 'Uknown';
-            case PLAY_TYPES.WATER:
-                return 'Water';
-            case PLAY_TYPES.SHIP:
-                return 'Ship';
-            default:
-                return this.playType
+        case PLAY_TYPES.UKNOWN:
+            return 'Uknown';
+        case PLAY_TYPES.WATER:
+            return 'Water';
+        case PLAY_TYPES.SHIP:
+            return 'Ship';
+        default:
+            return this.playType;
         }
     }
 
@@ -29,7 +29,7 @@ export default class Ship {
      */
     setPlayType (newType) {
         if (!Object.values(PLAY_TYPES).includes(newType)) throw new Error('Invalid input: newType must be a play type');
-        
+
         if (this.graphicalType < GRAPHICAL_TYPES.SHIP) this.setGraphicalType(newType);
         else if (newType < GRAPHICAL_TYPES.SHIP) this.setGraphicalType(newType);
 
@@ -45,7 +45,7 @@ export default class Ship {
         if (!Object.values(GRAPHICAL_TYPES).includes(newType)) throw new Error('Invalid input: newType must be a graphical type');
 
         if (this.internalType < INTERNAL_TYPES.SHIP) this.setInternalType(newType);
-        else if (newType < INTERNAL_TYPES.VERTICAL)  this.setInternalType(newType);
+        else if (newType < INTERNAL_TYPES.VERTICAL) this.setInternalType(newType);
 
         if (newType < PLAY_TYPES.SHIP) this.playType = newType;
         else if (newType > PLAY_TYPES.SHIP) this.playType = PLAY_TYPES.SHIP;
@@ -60,12 +60,12 @@ export default class Ship {
      */
     setInternalType (newType) {
         if (!Object.values(INTERNAL_TYPES).includes(newType)) throw new Error('Invalid input: newType must be a internal type');
-        
+
         if (newType < INTERNAL_TYPES.SHIP) this.graphicalType = newType;
         else if (newType < INTERNAL_TYPES.VERTICAL) this.graphicalType = newType;
         else if (newType >= INTERNAL_TYPES.VERTICAL) this.graphicalType = GRAPHICAL_TYPES.SHIP;
-        
-        if (newType < INTERNAL_TYPES.SHIP) this.playType = newType; 
+
+        if (newType < INTERNAL_TYPES.SHIP) this.playType = newType;
         else this.playType = PLAY_TYPES.SHIP;
 
         this.internalType = newType;
@@ -81,8 +81,8 @@ export const PLAY_TYPES = {
     // playable/basics
     UKNOWN: 0,
     WATER: 1,
-    SHIP: 2,
-}
+    SHIP: 2
+};
 
 /**
  * Not required for gameplay; purely for visual effect\
@@ -97,9 +97,9 @@ export const GRAPHICAL_TYPES = {
     SINGLE: 3,
     UP: 4,
     RIGHT: 5,
-    DOWN: 6, 
-    LEFT: 7,
-}
+    DOWN: 6,
+    LEFT: 7
+};
 
 /**
  * Cannot be seen nor interacted with; used in solving
@@ -114,10 +114,10 @@ export const INTERNAL_TYPES = {
     SINGLE: 3,
     UP: 4,
     RIGHT: 5,
-    DOWN: 6, 
+    DOWN: 6,
     LEFT: 7,
 
     // unique from graphical types
     VERTICAL: 8,
-    HORIZONTAL: 9,
-}
+    HORIZONTAL: 9
+};
