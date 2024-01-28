@@ -5,7 +5,7 @@ import Board from './Board/Board';
 import BoardBuilder from './Board/BoardBuilder';
 import Ship, { PLAY_TYPES } from './Board/Ship';
 
-const preset = new BoardBuilder(4, 4).setShip([1, 3], new Ship(PLAY_TYPES.SHIP)).setShip([3, 1], new Ship(PLAY_TYPES.WATER));
+const preset = new BoardBuilder(4, 4).setShip([1, 3], PLAY_TYPES.SHIP).setShip([3, 1], PLAY_TYPES.WATER);
 
 class App extends React.Component {
     render () {
