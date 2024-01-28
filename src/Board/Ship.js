@@ -1,13 +1,18 @@
-/* eslint-disable no-unused-expressions */
+/**
+ * The ship class for the board
+ * @param {Number} type - The play, graphical, or internal type of the ship
+ */
 export default class Ship {
     playType;
     graphicalType;
     internalType;
 
-    constructor (playType, graphicalType, internalType) {
-        this.playType = playType;
-        this.graphicalType = graphicalType || this.playType;
-        this.internalType = internalType || this.playType;
+    constructor (type) {
+        // determine if it's a play, graphical, or internal type and use the respective function
+        if (type <= PLAY_TYPES.SHIP) this.setPlayType(type);
+        else if (type <= GRAPHICAL_TYPES.LEFT) this.setGraphicalType(type);
+        else if (type <= INTERNAL_TYPES.HORIZONTAL) this.setInternalType(type);
+        else throw new Error('type should be a play, graphical, or internal type');
     }
 
     toString () {
