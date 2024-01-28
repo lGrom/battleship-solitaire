@@ -64,8 +64,9 @@ export default class BoardBuilder {
 
         let ship = value;
 
-        if (!(value instanceof Ship)) throw new Error('Invalid input: value must be instance of ship');
+        if (value instanceof Ship) ship = value;
         else if (typeof value === 'number') ship = new Ship(value);
+        else throw new Error('value should be an instance of Ship or a ship type');
 
         const tmpBoard = this.boardState;
         tmpBoard[index] = ship;
@@ -117,7 +118,7 @@ export default class BoardBuilder {
 
         if (index === null) throw new Error('Index is not within board dimensions');
 
-        this.setShip(index);
+        return this.setShip(index, value);
     }
 
     displayBoard () {
