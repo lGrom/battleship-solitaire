@@ -62,10 +62,14 @@ export default class BoardBuilder {
     setShip (position, value) {
         const index = this.positionToIndex(position);
 
-        if (!(value instanceof Ship)) throw new Error('Invalid input: value must be instance of ship');
+        let ship = value;
+
+        if (value instanceof Ship) ship = value;
+        else if (typeof value === 'number') ship = new Ship(value);
+        else throw new Error('value should be an instance of Ship or a ship type');
 
         const tmpBoard = this.boardState;
-        tmpBoard[index] = value;
+        tmpBoard[index] = ship;
         this.boardState = tmpBoard;
 
         return this;
@@ -84,6 +88,7 @@ export default class BoardBuilder {
         if (index % this.width === 0 && relativePosition % 3 === 0) return null;
         if (index % this.width === this.width - 1 && relativePosition % 3 === 2) return null;
 
+        //               base      vertical offset                                         horizontal offset
         const absIndex = (index) + ((Math.floor(relativePosition / 3) - 1) * this.width) + (relativePosition % 3 - 1);
 
         // check absIndex is within the board
@@ -111,14 +116,9 @@ export default class BoardBuilder {
     setRelativeShip (position, relativePosition, value) {
         const index = this.relativePositionToIndex(position, relativePosition);
 
-        if (!(value instanceof Ship)) throw new Error('Invalid input: value must be instance of ship');
         if (index === null) throw new Error('Index is not within board dimensions');
 
-        const tmpBoard = this.boardState;
-        tmpBoard[index] = value;
-        this.boardState = tmpBoard;
-
-        return this;
+        return this.setShip(index, value);
     }
 
     displayBoard () {
