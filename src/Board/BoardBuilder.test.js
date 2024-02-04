@@ -1,5 +1,5 @@
 /* eslint-disable no-undef */
-import BoardBuilder, { RelativePositions } from './BoardBuilder';
+import BoardBuilder, { RELATIVE_POSITIONS } from './BoardBuilder';
 import Ship, { PLAY_TYPES } from './Ship';
 import { act } from 'react-dom/test-utils';
 
@@ -48,18 +48,18 @@ test('getShip', () => {
 test('relativePositionToIndex', () => {
     const board = new BoardBuilder(4, 4);
 
-    expect(board.relativePositionToIndex([2, 3], RelativePositions.RIGHT)).toBe(10);
-    expect(board.relativePositionToIndex([2, 3], RelativePositions.TOP_LEFT)).toBe(4);
-    expect(board.relativePositionToIndex([2, 3], RelativePositions.BOTTOM)).toBe(13);
+    expect(board.relativePositionToIndex([2, 3], RELATIVE_POSITIONS.RIGHT)).toBe(10);
+    expect(board.relativePositionToIndex([2, 3], RELATIVE_POSITIONS.TOP_LEFT)).toBe(4);
+    expect(board.relativePositionToIndex([2, 3], RELATIVE_POSITIONS.BOTTOM)).toBe(13);
 });
 
 test('setRelativeShip', () => {
     const board = new BoardBuilder(4, 4);
     const ship = new Ship(PLAY_TYPES.SHIP);
 
-    expect(board.setRelativeShip([2, 3], RelativePositions.TOP_LEFT, ship).getShip([1, 2])).toEqual(ship);
-    expect(board.setRelativeShip([2, 3], RelativePositions.RIGHT, ship).getShip([3, 3])).toEqual(ship);
-    expect(board.setRelativeShip([2, 3], RelativePositions.BOTTOM, ship).getShip([2, 4])).toEqual(ship);
+    expect(board.setRelativeShip([2, 3], RELATIVE_POSITIONS.TOP_LEFT, ship).getShip([1, 2])).toEqual(ship);
+    expect(board.setRelativeShip([2, 3], RELATIVE_POSITIONS.RIGHT, ship).getShip([3, 3])).toEqual(ship);
+    expect(board.setRelativeShip([2, 3], RELATIVE_POSITIONS.BOTTOM, ship).getShip([2, 4])).toEqual(ship);
 });
 
 test('getRelativeShip', () => {
@@ -71,9 +71,9 @@ test('getRelativeShip', () => {
     board1.setShip([3, 1], ship1);
     board2.setShip([3, 3], ship2);
 
-    expect(board1.getRelativeShip([2, 2], RelativePositions.TOP_RIGHT)).toBe(ship1);
-    expect(board2.getRelativeShip([2, 2], RelativePositions.BOTTOM_RIGHT)).toBe(ship2);
+    expect(board1.getRelativeShip([2, 2], RELATIVE_POSITIONS.TOP_RIGHT)).toBe(ship1);
+    expect(board2.getRelativeShip([2, 2], RELATIVE_POSITIONS.BOTTOM_RIGHT)).toBe(ship2);
 
-    expect(board1.getRelativeShip([1, 1], RelativePositions.TOP)).toBeNull();
-    expect(board1.getRelativeShip([1, 4], RelativePositions.BOTTOM)).toBeNull();
+    expect(board1.getRelativeShip([1, 1], RELATIVE_POSITIONS.TOP)).toBeNull();
+    expect(board1.getRelativeShip([1, 4], RELATIVE_POSITIONS.BOTTOM)).toBeNull();
 });
