@@ -16,13 +16,27 @@ export default class Ship {
     }
 
     toString () {
-        switch (this.playType) {
-        case PLAY_TYPES.UKNOWN:
+        switch (this.internalType) {
+        case INTERNAL_TYPES.UKNOWN:
             return 'Uknown';
-        case PLAY_TYPES.WATER:
+        case INTERNAL_TYPES.WATER:
             return 'Water';
-        case PLAY_TYPES.SHIP:
+        case INTERNAL_TYPES.SHIP:
             return 'Ship';
+        case INTERNAL_TYPES.DOWN:
+            return 'Down';
+        case INTERNAL_TYPES.HORIZONTAL:
+            return 'Horizontal';
+        case INTERNAL_TYPES.LEFT:
+            return 'Left';
+        case INTERNAL_TYPES.RIGHT:
+            return 'Right';
+        case INTERNAL_TYPES.SINGLE:
+            return 'Single';
+        case INTERNAL_TYPES.UP:
+            return 'Up';
+        case INTERNAL_TYPES.VERTICAL:
+            return 'Vertical';
         default:
             return this.playType;
         }

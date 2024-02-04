@@ -26,6 +26,8 @@ export default class Board extends React.Component {
             ship.setPlayType(newType);
             this.setState({ board: this.state.board.setShip(index, ship) });
         }
+
+        this.state.board.computeGraphicalTypes();
     }
 
     displayBoard () {
@@ -49,15 +51,3 @@ export default class Board extends React.Component {
         );
     }
 }
-
-export const RelativePositions = {
-    TOP_LEFT: 0,
-    TOP: 1,
-    TOP_RIGHT: 2,
-    LEFT: 3,
-    // CENTER: 4, (this)
-    RIGHT: 5,
-    BOTTOM_LEFT: 6,
-    BOTTOM: 7,
-    BOTTOM_RIGHT: 8
-};

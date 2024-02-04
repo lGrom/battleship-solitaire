@@ -1,4 +1,4 @@
-import Ship, { PLAY_TYPES } from './Ship';
+import Ship, { GRAPHICAL_TYPES, INTERNAL_TYPES, PLAY_TYPES } from './Ship';
 
 /**
  * The underlying Board class
@@ -14,6 +14,76 @@ export default class BoardBuilder {
         this.preset = preset;
 
         this.boardState = createBoardState(this.width, this.height, this.preset);
+    }
+
+    computeGraphicalTypes () {
+        const board = this.boardState;
+
+        // uses setInternalType because that also runs setGraphicalType
+        for (let i = 0; i < board.length; i++) {
+            const board = this.boardState;
+            function setType (type) {
+                board[i].setInternalType(type);
+            }
+
+            const [isShip, isUnkown, isWater] = [BoardBuilder.isShips, BoardBuilder.isUnkown, BoardBuilder.isWater];
+
+            if (this.boardState[i].playType !== PLAY_TYPES.SHIP) continue;
+
+            // makes the edges act as water
+            const left = this.getRelativeShip(i, RELATIVE_POSITIONS.LEFT) || new Ship(PLAY_TYPES.WATER);
+            const top = this.getRelativeShip(i, RELATIVE_POSITIONS.TOP) || new Ship(PLAY_TYPES.WATER);
+            const right = this.getRelativeShip(i, RELATIVE_POSITIONS.RIGHT) || new Ship(PLAY_TYPES.WATER);
+            const bottom = this.getRelativeShip(i, RELATIVE_POSITIONS.BOTTOM) || new Ship(PLAY_TYPES.WATER);
+
+            // now just do all the logic from here and have a grand old time
+            if (isWater([left, top, right, bottom])) setType(GRAPHICAL_TYPES.SINGLE);
+            else if (
+                isShip([left, right]) ||
+                (isShip(left) && isUnkown(right)) ||
+                (isShip(right && isUnkown(left)))) setType(INTERNAL_TYPES.HORIZONTAL);
+            else if (
+                isShip([top, bottom]) ||
+                (isShip(top) && isUnkown(bottom)) ||
+                (isShip(bottom) && isUnkown(top))) setType(INTERNAL_TYPES.VERTICAL);
+
+            // now for the billion ship ship water cases
+            // else if (isShip(left) && )
+            else if (isShip(left) && isWater(right)) setType(GRAPHICAL_TYPES.LEFT);
+            else if (isShip(top) && isWater(bottom)) setType(GRAPHICAL_TYPES.UP);
+            else if (isShip(right) && isWater(left)) setType(GRAPHICAL_TYPES.RIGHT);
+            else if (isShip(bottom) && isWater(top)) setType(GRAPHICAL_TYPES.DOWN);
+        }
+    }
+
+    /**
+     * Returns true if all provided squares are a certain type
+     * @param {Ship | Ship[]} squares
+     * @param {number} type
+     * @returns
+     */
+    static isPlayType (squares, type) {
+        if (Array.isArray(squares)) {
+            for (const square of squares) {
+                if (square.playType !== type) return false;
+            }
+
+            return true;
+        } else {
+            return squares.playType === type;
+        }
+    }
+
+    static isWater (squares) {
+        return BoardBuilder.isPlayType(squares, PLAY_TYPES.WATER);
+    }
+
+    static isShips (squares) {
+        return BoardBuilder.isPlayType(squares, PLAY_TYPES.SHIP);
+    }
+
+    static isUnkown (squares) {
+        return BoardBuilder.isPlayType(squares, PLAY_TYPES.UKNOWN);
     }
 
     /**
@@ -135,7 +205,7 @@ export default class BoardBuilder {
     }
 }
 
-export const RelativePositions = {
+export const RELATIVE_POSITIONS = {
     TOP_LEFT: 0,
     TOP: 1,
     TOP_RIGHT: 2,
