@@ -6,7 +6,7 @@ TODO:
 - [X] make it playable (left/right click functions)
 - [X] add support for pre-existing ships
 - [X] make setShip accept playtypes as well as ship objects
-- [ ] make graphical types auto-compute
+- [X] make graphical types auto-compute
 - [ ] make an automatic solver
 - [ ] make a solvable board generator with with options for difficulty and guess and check
 - [ ] add styling to webpage
