@@ -21,14 +21,14 @@ export default class BoardBuilder {
 
         // uses setInternalType because that also runs setGraphicalType
         for (let i = 0; i < board.length; i++) {
+            // for legiability
+            const [isShip, isUnkown, isWater] = [Ship.isShips, Ship.isUnkown, Ship.isWater];
+            if (!isShip(this.boardState[i])) continue;
+
             const board = this.boardState;
             function setType (type) {
                 board[i].setInternalType(type);
             }
-
-            const [isShip, isUnkown, isWater] = [BoardBuilder.isShips, BoardBuilder.isUnkown, BoardBuilder.isWater];
-
-            if (this.boardState[i].playType !== PLAY_TYPES.SHIP) continue;
 
             // makes the edges act as water
             const left = this.getRelativeShip(i, RELATIVE_POSITIONS.LEFT) || new Ship(PLAY_TYPES.WATER);
@@ -54,36 +54,6 @@ export default class BoardBuilder {
             else if (isShip(right) && isWater(left)) setType(GRAPHICAL_TYPES.RIGHT);
             else if (isShip(bottom) && isWater(top)) setType(GRAPHICAL_TYPES.DOWN);
         }
-    }
-
-    /**
-     * Returns true if all provided squares are a certain type
-     * @param {Ship | Ship[]} squares
-     * @param {number} type
-     * @returns
-     */
-    static isPlayType (squares, type) {
-        if (Array.isArray(squares)) {
-            for (const square of squares) {
-                if (square.playType !== type) return false;
-            }
-
-            return true;
-        } else {
-            return squares.playType === type;
-        }
-    }
-
-    static isWater (squares) {
-        return BoardBuilder.isPlayType(squares, PLAY_TYPES.WATER);
-    }
-
-    static isShips (squares) {
-        return BoardBuilder.isPlayType(squares, PLAY_TYPES.SHIP);
-    }
-
-    static isUnkown (squares) {
-        return BoardBuilder.isPlayType(squares, PLAY_TYPES.UKNOWN);
     }
 
     /**

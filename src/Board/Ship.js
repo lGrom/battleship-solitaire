@@ -90,6 +90,36 @@ export default class Ship {
         this.internalType = newType;
         return this;
     }
+
+    /**
+     * Returns true if all provided squares are a certain type
+     * @param {Ship | Ship[]} squares
+     * @param {number} type
+     * @returns
+     */
+    static isPlayType (squares, type) {
+        if (Array.isArray(squares)) {
+            for (const square of squares) {
+                if (square.playType !== type) return false;
+            }
+
+            return true;
+        } else {
+            return squares.playType === type;
+        }
+    }
+
+    static isWater (squares) {
+        return Ship.isPlayType(squares, PLAY_TYPES.WATER);
+    }
+
+    static isShips (squares) {
+        return Ship.isPlayType(squares, PLAY_TYPES.SHIP);
+    }
+
+    static isUnkown (squares) {
+        return Ship.isPlayType(squares, PLAY_TYPES.UKNOWN);
+    }
 }
 
 /**
