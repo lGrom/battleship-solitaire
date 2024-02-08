@@ -1,15 +1,19 @@
 /**
  * The ship class for the board
- * @param {Number} type - The play, graphical, or internal type of the ship
  */
 export default class Ship {
     playType;
     graphicalType;
     internalType;
 
-    constructor (type) {
+    /**
+     * @param {Number} type - The play, graphical, or internal type of the ship
+     * @param {boolean} [pinned] - Should the Ship's graphical type change (used for presets)
+     */
+    constructor (type, pinned) {
         // sets the play and graphical types
         this.setInternalType(type);
+        this.pinned = pinned || false;
     }
 
     toString () {

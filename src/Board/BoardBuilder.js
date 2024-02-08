@@ -16,16 +16,18 @@ export default class BoardBuilder {
         this.boardState = createBoardState(this.width, this.height, this.preset);
     }
 
+    // consistency in syntax and whatnot could use some work here
     computeGraphicalTypes () {
         const board = this.boardState;
 
         // uses setInternalType because that also runs setGraphicalType
         for (let i = 0; i < board.length; i++) {
+            if (board[i].pinned) return;
+
             // for legiability
             const [isShip, isUnkown, isWater] = [Ship.isShips, Ship.isUnkown, Ship.isWater];
-            if (!isShip(this.boardState[i])) continue;
+            if (!isShip(board[i])) continue;
 
-            const board = this.boardState;
             function setType (type) {
                 board[i].setInternalType(type);
             }
@@ -96,16 +98,17 @@ export default class BoardBuilder {
 
     /**
      * @param {Array<Number>|Number} position - An index or array starting at 1 as [x, y]
-     * @param {Ship} value
+     * @param {Ship|number} value - The ship object or type
+     * @param {boolean} [pinned] - Should updateGraphicalTypes ignore the ship (only works if value is a ship type)
      * @returns {Board} this
      */
-    setShip (position, value) {
+    setShip (position, value, pinned) {
         const index = this.positionToIndex(position);
 
         let ship = value;
 
         if (value instanceof Ship) ship = value;
-        else if (typeof value === 'number') ship = new Ship(value);
+        else if (typeof value === 'number') ship = new Ship(value, pinned);
         else throw new Error('value should be an instance of Ship or a ship type');
 
         const tmpBoard = this.boardState;
@@ -150,15 +153,16 @@ export default class BoardBuilder {
     /**
      * @param {Array<Number>|Number} position - An index or array starting at 1 as [x, y]
      * @param {Number} relativePosition - The index relative to position
-     * @param {Ship} value
+     * @param {Ship|Number} value - The ship object or type
+     * @param {boolean} [pinned] - Should updateGraphicalTypes ignore the ship (only if value is a ship type)
      * @returns {Board} this
      */
-    setRelativeShip (position, relativePosition, value) {
+    setRelativeShip (position, relativePosition, value, pinned) {
         const index = this.relativePositionToIndex(position, relativePosition);
 
         if (index === null) throw new Error('Index is not within board dimensions');
 
-        return this.setShip(index, value);
+        return this.setShip(index, value, pinned);
     }
 
     displayBoard () {

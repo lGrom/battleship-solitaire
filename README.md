@@ -7,6 +7,7 @@ TODO:
 - [X] add support for pre-existing ships
 - [X] make setShip accept playtypes as well as ship objects
 - [X] make graphical types auto-compute
+- [ ] add testing for pinned ships
 - [ ] make an automatic solver
 - [ ] make a solvable board generator with with options for difficulty and guess and check
 - [ ] add styling to webpage
