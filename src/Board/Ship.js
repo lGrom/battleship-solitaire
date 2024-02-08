@@ -8,11 +8,8 @@ export default class Ship {
     internalType;
 
     constructor (type) {
-        // determine if it's a play, graphical, or internal type and use the respective function
-        if (type <= PLAY_TYPES.SHIP) this.setPlayType(type);
-        else if (type <= GRAPHICAL_TYPES.LEFT) this.setGraphicalType(type);
-        else if (type <= INTERNAL_TYPES.HORIZONTAL) this.setInternalType(type);
-        else throw new Error('type should be a play, graphical, or internal type');
+        // sets the play and graphical types
+        this.setInternalType(type);
     }
 
     toString () {
