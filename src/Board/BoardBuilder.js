@@ -12,9 +12,27 @@ export default class BoardBuilder {
         this.width = width ?? 4;
         this.height = height ?? 4;
         this.preset = preset;
-
         this.boardState = createBoardState(this.width, this.height, this.preset);
     }
+
+    solve (cache, iteration) {
+        /*
+        fun compute (cache, iteration):
+            if !cache tmp = this.board
+            // do all the logic
+            iteration++
+            graphicaltypes
+            if tmp != cache compute(tmp, iteration)
+        */
+        const tmp = cache || structuredClone(this.boardState);
+        tmp.computeGraphicalTypes();
+
+        // all the logic
+
+        if (tmp != cache) {
+            this.solve(tmp, iteration);
+        }
+    } 
 
     // consistency in syntax and whatnot could use some work here
     computeGraphicalTypes () {
@@ -149,6 +167,7 @@ export default class BoardBuilder {
         const index = this.relativePositionToIndex(position, relativePosition);
         return (index !== null) ? this.boardState[index] : null;
     }
+    
 
     /**
      * @param {Array<Number>|Number} position - An index or array starting at 1 as [x, y]
