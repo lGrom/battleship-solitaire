@@ -1,17 +1,33 @@
 import Ship, { GRAPHICAL_TYPES, INTERNAL_TYPES, PLAY_TYPES } from './Ship';
 
 /**
- * The underlying Board class
+ * The underlying Board class. For use as a preset, supply width and height. For use as a puzzle, supply preset and either solution or verticalCount, horizontalCount, and shipsLeft.
  * @param {Number} width Width in squares
  * @param {Number} height Height in squares
  * @param {BoardBuilder} [preset] Pre-existing ships
+ * @param {BoardBuilder} [solution] Ending board (leave undefined if using vert/hoz count and shipsLeft)
+ * @param {Number[]} [verticalCount] Number of ships in each column (left to right)
+ * @param {Number[]} [horizontalCount] Number of ships in each row (top to bottom)
+ * @param {Number[]} [shipsLeft] Number of each type of ship left (eg. 3 solos and 1 double = [3, 1])
  */
 export default class BoardBuilder {
-    constructor (width, height, preset) {
-        // removed checks for brevity's sake
-        this.width = width ?? 4;
-        this.height = height ?? 4;
-        this.preset = preset;
+    constructor (width, height, preset, solution, verticalCount, horizontalCount, shipsLeft) {
+        // if !width and preset exists, set width to preset width
+        this.width = width || !!preset ? preset.width : 4;
+        this.height = height || !!preset ? preset.height : 4;
+
+        if (preset) {
+            if (solution) {
+                // interpret everything else
+            } else if (shipsLeft && verticalCount && horizontalCount) {
+                // interpret solution
+                // note: this solution should not be used for checking if the puzzle is solved, as it may not be the only one
+                // instead, create an isSolved() function to check if the board's state meets all criteria
+            }
+
+            // check viability
+        }
+
         this.boardState = createBoardState(this.width, this.height, this.preset);
     }
 
@@ -29,10 +45,10 @@ export default class BoardBuilder {
 
         // all the logic
 
-        if (tmp != cache) {
+        if (tmp !== cache) {
             this.solve(tmp, iteration);
         }
-    } 
+    }
 
     // consistency in syntax and whatnot could use some work here
     computeGraphicalTypes () {
@@ -167,7 +183,6 @@ export default class BoardBuilder {
         const index = this.relativePositionToIndex(position, relativePosition);
         return (index !== null) ? this.boardState[index] : null;
     }
-    
 
     /**
      * @param {Array<Number>|Number} position - An index or array starting at 1 as [x, y]
