@@ -1,3 +1,5 @@
+import { RELATIVE_POSITIONS } from './BoardBuilder';
+
 /**
  * The ship class for the board
  */
@@ -93,6 +95,20 @@ export default class Ship {
     }
 
     /**
+     * @returns {Boolean} true if ship is left, right, up, or down
+     */
+    isUnidirectional () {
+        return [GRAPHICAL_TYPES.LEFT, GRAPHICAL_TYPES.RIGHT, GRAPHICAL_TYPES.UP, GRAPHICAL_TYPES.DOWN].includes(this.internalType);
+    }
+
+    /**
+     * @returns {Boolean} true if ship is horizontal or vertical
+     */
+    isBidirectional () {
+        return [INTERNAL_TYPES.HORIZONTAL, INTERNAL_TYPES.VERTICAL].includes(this.internalType);
+    }
+
+    /**
      * Returns true if all provided squares are a certain type
      * @param {Ship | Ship[]} squares
      * @param {number} type
@@ -121,6 +137,21 @@ export default class Ship {
     static isUnkown (squares) {
         return Ship.isPlayType(squares, PLAY_TYPES.UKNOWN);
     }
+
+    static graphicalTypeToRelativePosition (graphicalType) {
+        switch (graphicalType) {
+        case GRAPHICAL_TYPES.LEFT:
+            return RELATIVE_POSITIONS.LEFT;
+        case GRAPHICAL_TYPES.RIGHT:
+            return RELATIVE_POSITIONS.RIGHT;
+        case GRAPHICAL_TYPES.UP:
+            return RELATIVE_POSITIONS.TOP;
+        case GRAPHICAL_TYPES.DOWN:
+            return RELATIVE_POSITIONS.BOTTOM;
+        default:
+            throw new Error(`${graphicalType} has no single corresponding relative position`);
+        }
+    }
 }
 
 /**
@@ -135,7 +166,7 @@ export const PLAY_TYPES = {
 };
 
 /**
- * Not required for gameplay; purely for visual effect\
+ * Not required for gameplay; purely for visual effect
  * @constant
  */
 export const GRAPHICAL_TYPES = {

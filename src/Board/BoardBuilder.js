@@ -31,22 +31,33 @@ export default class BoardBuilder {
         this.boardState = createBoardState(this.width, this.height, this.preset);
     }
 
-    solve (cache, iteration) {
-        /*
-        fun compute (cache, iteration):
-            if !cache tmp = this.board
-            // do all the logic
-            iteration++
-            graphicaltypes
-            if tmp != cache compute(tmp, iteration)
-        */
-        const tmp = cache || structuredClone(this.boardState);
+    // could be memoized, but it's unlikely to solve the same board multiple times (for now)
+    /**
+     * Solves the board
+     * @param {BoardBuilder} ogBoard The original board to solve
+     * @param {BoardBuilder} [cache] The answer in progress
+     * @param {Number} [iteration]
+     */
+    solve (ogBoard, cache, iteration) {
+        const tmp = cache || new BoardBuilder(ogBoard.width, ogBoard.height, ogBoard.preset, undefined, ogBoard.verticalCount, ogBoard.horizontalCount, ogBoard.shipsLeft);
+        tmp.boardState = structuredClone(ogBoard.boardState);
         tmp.computeGraphicalTypes();
 
-        // all the logic
+        // ALL THE LOGIC
+
+        for (let i = 0; i < tmp.boardState.length; i++) {
+            const square = tmp.boardState[i];
+            if (square.isUnidirectional()) tmp.setRelativeWater(i, Ship.graphicalTypeToRelativePosition(square.graphicalType));
+
+            // full rows/columns
+            // rows/columns that would be full if all unkown squares were ships
+            // see where remaining ships could fit. if one can only fit in one place, put it there and remove it from all other possibilities
+        }
+
+        // END OF ALL THE LOGIC
 
         if (tmp !== cache) {
-            this.solve(tmp, iteration);
+            this.solve(ogBoard, tmp, iteration++ || 1);
         }
     }
 
@@ -175,7 +186,7 @@ export default class BoardBuilder {
     }
 
     /**
-     * @param {Array<Number>|Number} position - An index or array starting at 1 as [x, y]
+     * @param {Number[]|Number} position - An index or array starting at 1 as [x, y]
      * @param {Number} relativePosition - The index relative to position
      * @returns {Ship}
      */
@@ -185,7 +196,7 @@ export default class BoardBuilder {
     }
 
     /**
-     * @param {Array<Number>|Number} position - An index or array starting at 1 as [x, y]
+     * @param {Number[]|Number} position - An index or array starting at 1 as [x, y]
      * @param {Number} relativePosition - The index relative to position
      * @param {Ship|Number} value - The ship object or type
      * @param {boolean} [pinned] - Should updateGraphicalTypes ignore the ship (only if value is a ship type)
@@ -199,6 +210,21 @@ export default class BoardBuilder {
         return this.setShip(index, value, pinned);
     }
 
+    /**
+     * Sets all surrounding squares to water
+     * @param {Number[]|Number} position - An index or array starting at 1 as [x, y]
+     * @param {Number} except - A relative position to set to a ship instead of water
+     * @returns {BoardBuilder} this
+     */
+    setRelativeWater (position, except) {
+        for (const relativePosition in RELATIVE_POSITIONS) {
+            const value = RELATIVE_POSITIONS[relativePosition];
+
+            this.setRelativeShip(position, value, (except === value) ? PLAY_TYPES.SHIP : PLAY_TYPES.WATER);
+        }
+    }
+
+    // move to the react component eventually
     displayBoard () {
         return this.boardState.map((ship, index) => {
             return <div
