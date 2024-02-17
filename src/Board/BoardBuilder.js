@@ -1,25 +1,21 @@
 import Ship, { GRAPHICAL_TYPES, INTERNAL_TYPES, PLAY_TYPES } from './Ship';
 
-/**
- * The underlying Board class. For use as a preset, supply width and height. For use as a puzzle, supply preset and either solution or verticalCount, horizontalCount, and shipsLeft.
- * @param {Number} width Width in squares
- * @param {Number} height Height in squares
- * @param {BoardBuilder} [preset] Pre-existing ships
- * @param {BoardBuilder} [solution] Ending board (leave undefined if using vert/hoz count and shipsLeft)
- * @param {Number[]} [verticalCount] Number of ships in each column (left to right)
- * @param {Number[]} [horizontalCount] Number of ships in each row (top to bottom)
- * @param {Number[]} [shipsLeft] Number of each type of ship left (eg. 3 solos and 1 double = [3, 1])
- */
 export default class BoardBuilder {
-    constructor (width, height, preset, solution, verticalCount, horizontalCount, shipsLeft) {
-        // if !width and preset exists, set width to preset width
-        this.width = width || !!preset ? preset.width : 4;
-        this.height = height || !!preset ? preset.height : 4;
-
+    /**
+     * The underlying Board class. For use as a preset, supply width and height. For use as a puzzle, supply preset and either solution or verticalCount, horizontalCount, and shipsLeft.
+     * @param {Number} width Width in squares
+     * @param {Number} height Height in squares
+     * @param {BoardBuilder} [preset] Pre-existing ships
+     * @param {BoardBuilder} [solution] Ending board (leave undefined if using vert/hoz count and shipsLeft)
+     * @param {Number[]} [columnCounts] Number of ships in each column (left to right)
+     * @param {Number[]} [rowCounts] Number of ships in each row (top to bottom)
+     * @param {Number[]} [shipsLeft] Number of each type of ship left (eg. 3 solos and 1 double = [3, 1])
+     */
+    constructor (width, height, preset, solution, columnCounts, rowCounts, shipsLeft) {
         if (preset) {
             if (solution) {
                 // interpret everything else
-            } else if (shipsLeft && verticalCount && horizontalCount) {
+            } else if (shipsLeft && columnCounts && rowCounts) {
                 // interpret solution
                 // note: this solution should not be used for checking if the puzzle is solved, as it may not be the only one
                 // instead, create an isSolved() function to check if the board's state meets all criteria
@@ -28,6 +24,12 @@ export default class BoardBuilder {
             // check viability
         }
 
+        // if !width and preset exists, set width to preset width
+        this.width = width || !!preset ? preset.width : 4;
+        this.height = height || !!preset ? preset.height : 4;
+
+        this.columnCounts = columnCounts;
+        this.rowCounts = rowCounts;
         this.boardState = createBoardState(this.width, this.height, this.preset);
     }
 
@@ -39,18 +41,65 @@ export default class BoardBuilder {
      * @param {Number} [iteration]
      */
     solve (ogBoard, cache, iteration) {
-        const tmp = cache || new BoardBuilder(ogBoard.width, ogBoard.height, ogBoard.preset, undefined, ogBoard.verticalCount, ogBoard.horizontalCount, ogBoard.shipsLeft);
-        tmp.boardState = structuredClone(ogBoard.boardState);
+        const tmp = cache || new BoardBuilder(ogBoard.width, ogBoard.height, ogBoard, undefined, ogBoard.verticalCount, ogBoard.horizontalCount, ogBoard.shipsLeft);
         tmp.computeGraphicalTypes();
 
         // ALL THE LOGIC
+
+        function countColumns () {
+            const counts = [];
+            for (let x = 0; x < tmp.width; x++) {
+                const currentCount = [0, 0];
+
+                for (let y = 0; y < tmp.height; y++) {
+                    const shipType = tmp.getShip([x + 1, y + 1]).playType;
+
+                    if (shipType === PLAY_TYPES.SHIP) currentCount[0]++;
+                    else if (shipType === PLAY_TYPES.UKNOWN) currentCount[1]++;
+                }
+
+                counts.push(currentCount);
+            }
+
+            return counts;
+        }
+
+        function countRows () {
+            const counts = [];
+            for (let y = 0; y < tmp.height; y++) {
+                const currentCount = [0, 0];
+
+                for (let x = 0; x < tmp.width; x++) {
+                    const shipType = tmp.getShip([x + 1, y + 1]).playType;
+
+                    if (shipType === PLAY_TYPES.SHIP) currentCount[0]++;
+                    else if (shipType === PLAY_TYPES.UKNOWN) currentCount[1]++;
+                }
+
+                counts.push(currentCount);
+            }
+
+            return counts;
+        }
 
         for (let i = 0; i < tmp.boardState.length; i++) {
             const square = tmp.boardState[i];
             if (square.isUnidirectional()) tmp.setUnidirectionalWater(i, Ship.graphicalTypeToRelativePosition(square.internalType));
             if (square.isBidirectional()) tmp.setBidirectionalWater(i, square.internalType);
 
-            // full rows/columns
+            // in the future make this not try to flood rows and columns that are already flooded
+            const currentColumnCounts = countColumns();
+            for (let x = 0; x < tmp.width; x++) {
+                // if the actual number of ships = the expected number of ships, set the rest of the column to water
+                if (tmp.columnCounts[x] === currentColumnCounts[x][0]) tmp.floodColumn(x);
+            }
+
+            const currentRowCounts = countRows();
+            for (let y = 0; y < tmp.width; y++) {
+                // if the actual number of ships = the expected number of ships, set the rest of the column to water
+                if (tmp.rowCounts[y] === currentRowCounts[y][0]) tmp.floodRow(y);
+            }
+
             // rows/columns that would be full if all unkown squares were ships
             // see where remaining ships could fit. if one can only fit in one place, put it there and remove it from all other possibilities
         }
@@ -223,6 +272,8 @@ export default class BoardBuilder {
 
             this.setRelativeShip(position, value, (except === value) ? PLAY_TYPES.SHIP : PLAY_TYPES.WATER);
         }
+
+        return this;
     }
 
     /**
@@ -239,6 +290,38 @@ export default class BoardBuilder {
 
             if (!excludedDirections.includes(relativePosition)) this.setRelativeShip(position, relativePosition, PLAY_TYPES.WATER);
         }
+
+        return this;
+    }
+
+    /**
+     * Flood the column with the given type or water
+     * @param {Number} column The target column's index
+     * @param {Number} type What to flood it with (defaults to water)
+     * @returns {BoardBuilder} this
+     */
+    floodColumn (column, type) {
+        for (let y = 0; y < this.height; y++) {
+            const square = this.getShip([column + 1, y + 1]);
+            if (square.playType === PLAY_TYPES.UKNOWN) this.setShip([column + 1, y + 1], type ?? PLAY_TYPES.WATER);
+        }
+
+        return this;
+    }
+
+    /**
+     * Flood the row with the given type or water
+     * @param {Number} row The target row's index
+     * @param {Number} type What to flood it with (defaults to water)
+     * @returns {BoardBuilder} this
+     */
+    floodRow (row, type) {
+        for (let x = 0; x < this.width; x++) {
+            const square = this.getShip([x + 1, row + 1]);
+            if (square.playType === PLAY_TYPES.UKNOWN) this.setShip([x + 1, row + 1], type ?? PLAY_TYPES.WATER);
+        }
+
+        return this;
     }
 
     // move to the react component eventually
