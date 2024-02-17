@@ -12,3 +12,7 @@ TODO:
 - [ ] make a solvable board generator with with options for difficulty and guess and check
 - [ ] add styling to webpage
 - [ ] add dev documentation
+
+more specific things
+- [ ] make position arrays start at 0 instead of 1
+- 
