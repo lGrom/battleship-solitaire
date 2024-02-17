@@ -47,7 +47,8 @@ export default class BoardBuilder {
 
         for (let i = 0; i < tmp.boardState.length; i++) {
             const square = tmp.boardState[i];
-            if (square.isUnidirectional()) tmp.setRelativeWater(i, Ship.graphicalTypeToRelativePosition(square.graphicalType));
+            if (square.isUnidirectional()) tmp.setUnidirectionalWater(i, Ship.graphicalTypeToRelativePosition(square.internalType));
+            if (square.isBidirectional()) tmp.setBidirectionalWater(i, square.internalType);
 
             // full rows/columns
             // rows/columns that would be full if all unkown squares were ships
@@ -212,15 +213,31 @@ export default class BoardBuilder {
 
     /**
      * Sets all surrounding squares to water
-     * @param {Number[]|Number} position - An index or array starting at 1 as [x, y]
+     * @param {Number|Number[]} position - An index or array starting at 1 as [x, y]
      * @param {Number} except - A relative position to set to a ship instead of water
      * @returns {BoardBuilder} this
      */
-    setRelativeWater (position, except) {
+    setUnidirectionalWater (position, except) {
         for (const relativePosition in RELATIVE_POSITIONS) {
             const value = RELATIVE_POSITIONS[relativePosition];
 
             this.setRelativeShip(position, value, (except === value) ? PLAY_TYPES.SHIP : PLAY_TYPES.WATER);
+        }
+    }
+
+    /**
+     * Sets ships on the sides of a bidirectional ship to water
+     * @param {Number[]|Number} position - An index or array starting at 1 as [x, y]
+     * @param {Number} orientation - INTERNAL_TYPES.HORIZONTAL or .VERTICAL
+     * @returns {BoardBuilder} this
+     */
+    setBidirectionalWater (position, orientation) {
+        const excludedDirections = (orientation === INTERNAL_TYPES.HORIZONTAL) ? [RELATIVE_POSITIONS.LEFT, RELATIVE_POSITIONS.RIGHT] : [RELATIVE_POSITIONS.UP, RELATIVE_POSITIONS.DOWN];
+
+        for (const key in RELATIVE_POSITIONS) {
+            const relativePosition = RELATIVE_POSITIONS[key];
+
+            if (!excludedDirections.includes(relativePosition)) this.setRelativeShip(position, relativePosition, PLAY_TYPES.WATER);
         }
     }
 
