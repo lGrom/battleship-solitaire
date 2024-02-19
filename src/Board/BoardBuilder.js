@@ -1,4 +1,4 @@
-import Ship, { GRAPHICAL_TYPES, INTERNAL_TYPES, PLAY_TYPES } from './Ship';
+import Ship, { GRAPHICAL_TYPES, PLAY_TYPES } from './Ship';
 
 export default class BoardBuilder {
     /**
@@ -31,6 +31,8 @@ export default class BoardBuilder {
         this.columnCounts = columnCounts;
         this.rowCounts = rowCounts;
         this.boardState = createBoardState(this.width, this.height, this.preset);
+
+        this.shipsLeft = shipsLeft;
     }
 
     // could be memoized, but it's unlikely to solve the same board multiple times (for now)
@@ -39,9 +41,10 @@ export default class BoardBuilder {
      * @param {BoardBuilder} ogBoard The original board to solve
      * @param {BoardBuilder} [cache] The answer in progress
      * @param {Number} [iteration]
+     * @returns {BoardBuilder} The solved board
      */
-    solve (ogBoard, cache, iteration) {
-        const tmp = cache || new BoardBuilder(ogBoard.width, ogBoard.height, ogBoard, undefined, ogBoard.verticalCount, ogBoard.horizontalCount, ogBoard.shipsLeft);
+    static solve (ogBoard, cache, iteration) {
+        const tmp = cache || new BoardBuilder(ogBoard.width, ogBoard.height, ogBoard, undefined, ogBoard.columnCounts, ogBoard.rowCounts, ogBoard.shipsLeft);
         tmp.computeGraphicalTypes();
 
         // ALL THE LOGIC
@@ -84,8 +87,8 @@ export default class BoardBuilder {
 
         for (let i = 0; i < tmp.boardState.length; i++) {
             const square = tmp.boardState[i];
-            if (square.isUnidirectional()) tmp.setUnidirectionalWater(i, Ship.graphicalTypeToRelativePosition(square.internalType));
-            if (square.isBidirectional()) tmp.setBidirectionalWater(i, square.internalType);
+            if (square.isUnidirectional()) tmp.setUnidirectionalWater(i, Ship.graphicalTypeToRelativePosition(square.graphicalType));
+            if (square.isBidirectional()) tmp.setBidirectionalWater(i, square.graphicalType);
 
             // in the future make this not try to flood rows and columns that are already flooded
             const currentColumnCounts = countColumns();
@@ -96,7 +99,7 @@ export default class BoardBuilder {
 
             const currentRowCounts = countRows();
             for (let y = 0; y < tmp.width; y++) {
-                // if the actual number of ships = the expected number of ships, set the rest of the column to water
+                // if the actual number of ships = the expected number of ships, set the rest of the row to water
                 if (tmp.rowCounts[y] === currentRowCounts[y][0]) tmp.floodRow(y);
             }
 
@@ -107,7 +110,9 @@ export default class BoardBuilder {
         // END OF ALL THE LOGIC
 
         if (tmp !== cache) {
-            this.solve(ogBoard, tmp, iteration++ || 1);
+            BoardBuilder.solve(ogBoard, tmp, iteration++ || 1);
+        } else {
+            return tmp;
         }
     }
 
@@ -115,7 +120,6 @@ export default class BoardBuilder {
     computeGraphicalTypes () {
         const board = this.boardState;
 
-        // uses setInternalType because that also runs setGraphicalType
         for (let i = 0; i < board.length; i++) {
             if (board[i].pinned) return;
 
@@ -124,7 +128,7 @@ export default class BoardBuilder {
             if (!isShip(board[i])) continue;
 
             function setType (type) {
-                board[i].setInternalType(type);
+                board[i].setGraphicalType(type);
             }
 
             // makes the edges act as water
@@ -133,16 +137,16 @@ export default class BoardBuilder {
             const right = this.getRelativeShip(i, RELATIVE_POSITIONS.RIGHT) || new Ship(PLAY_TYPES.WATER);
             const bottom = this.getRelativeShip(i, RELATIVE_POSITIONS.BOTTOM) || new Ship(PLAY_TYPES.WATER);
 
-            // now just do all the logic from here and have a grand old time
+            // now just do all the logic from here and have a grand ol' time
             if (isWater([left, top, right, bottom])) setType(GRAPHICAL_TYPES.SINGLE);
             else if (
                 isShip([left, right]) ||
                 (isShip(left) && isUnkown(right)) ||
-                (isShip(right && isUnkown(left)))) setType(INTERNAL_TYPES.HORIZONTAL);
+                (isShip(right && isUnkown(left)))) setType(GRAPHICAL_TYPES.HORIZONTAL);
             else if (
                 isShip([top, bottom]) ||
                 (isShip(top) && isUnkown(bottom)) ||
-                (isShip(bottom) && isUnkown(top))) setType(INTERNAL_TYPES.VERTICAL);
+                (isShip(bottom) && isUnkown(top))) setType(GRAPHICAL_TYPES.VERTICAL);
 
             // now for the billion ship ship water cases
             // else if (isShip(left) && )
@@ -279,11 +283,13 @@ export default class BoardBuilder {
     /**
      * Sets ships on the sides of a bidirectional ship to water
      * @param {Number[]|Number} position - An index or array starting at 1 as [x, y]
-     * @param {Number} orientation - INTERNAL_TYPES.HORIZONTAL or .VERTICAL
+     * @param {Number} orientation - GRAPHICAL.HORIZONTAL or .VERTICAL
      * @returns {BoardBuilder} this
      */
     setBidirectionalWater (position, orientation) {
-        const excludedDirections = (orientation === INTERNAL_TYPES.HORIZONTAL) ? [RELATIVE_POSITIONS.LEFT, RELATIVE_POSITIONS.RIGHT] : [RELATIVE_POSITIONS.UP, RELATIVE_POSITIONS.DOWN];
+        // could use some error handling to check if orientation is horizontal or vertical and not left or something
+
+        const excludedDirections = (orientation === GRAPHICAL_TYPES.HORIZONTAL) ? [RELATIVE_POSITIONS.LEFT, RELATIVE_POSITIONS.RIGHT] : [RELATIVE_POSITIONS.UP, RELATIVE_POSITIONS.DOWN];
 
         for (const key in RELATIVE_POSITIONS) {
             const relativePosition = RELATIVE_POSITIONS[key];
