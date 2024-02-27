@@ -13,7 +13,7 @@ export default class Ship {
      */
     constructor (type, pinned) {
         // sets the play and graphical types
-        this.setInternalType(type);
+        this.setGraphicalType(type);
         this.pinned = pinned || false;
     }
 
