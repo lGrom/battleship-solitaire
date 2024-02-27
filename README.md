@@ -15,4 +15,3 @@ TODO:
 
 more specific things
 - [ ] make position arrays start at 0 instead of 1
-- 

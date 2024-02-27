@@ -24,13 +24,12 @@ export default class BoardBuilder {
             // check viability
         }
 
-        // if !width and preset exists, set width to preset width
-        this.width = width || !!preset ? preset.width : 4;
-        this.height = height || !!preset ? preset.height : 4;
+        this.width = width || preset?.width || 4;
+        this.height = height || preset?.height || 4;
 
         this.columnCounts = columnCounts;
         this.rowCounts = rowCounts;
-        this.boardState = createBoardState(this.width, this.height, this.preset);
+        this.boardState = createBoardState(this.width, this.height, preset);
 
         this.shipsLeft = shipsLeft;
     }
@@ -44,11 +43,14 @@ export default class BoardBuilder {
      * @returns {BoardBuilder} The solved board
      */
     static solve (ogBoard, cache, iteration) {
-        const tmp = cache || new BoardBuilder(ogBoard.width, ogBoard.height, ogBoard, undefined, ogBoard.columnCounts, ogBoard.rowCounts, ogBoard.shipsLeft);
+        const tmp = cache ? new BoardBuilder(cache.width, cache.height, cache, undefined, cache.columnCounts, cache.rowCounts, cache.shipsLeft) : new BoardBuilder(ogBoard.width, ogBoard.height, ogBoard, undefined, ogBoard.columnCounts, ogBoard.rowCounts, ogBoard.shipsLeft);
         tmp.computeGraphicalTypes();
 
         // ALL THE LOGIC
 
+        /**
+         * @returns {Number[][]} array of counts as [number of ships, number of unkowns]
+         */
         function countColumns () {
             const counts = [];
             for (let x = 0; x < tmp.width; x++) {
@@ -67,6 +69,9 @@ export default class BoardBuilder {
             return counts;
         }
 
+        /**
+         * @returns {Number[][]} array of counts as [number of ships, number of unkowns]
+         */
         function countRows () {
             const counts = [];
             for (let y = 0; y < tmp.height; y++) {
@@ -87,30 +92,38 @@ export default class BoardBuilder {
 
         for (let i = 0; i < tmp.boardState.length; i++) {
             const square = tmp.boardState[i];
-            if (square.isUnidirectional()) tmp.setUnidirectionalWater(i, Ship.graphicalTypeToRelativePosition(square.graphicalType));
-            if (square.isBidirectional()) tmp.setBidirectionalWater(i, square.graphicalType);
-
-            // in the future make this not try to flood rows and columns that are already flooded
-            const currentColumnCounts = countColumns();
-            for (let x = 0; x < tmp.width; x++) {
-                // if the actual number of ships = the expected number of ships, set the rest of the column to water
-                if (tmp.columnCounts[x] === currentColumnCounts[x][0]) tmp.floodColumn(x);
-            }
-
-            const currentRowCounts = countRows();
-            for (let y = 0; y < tmp.width; y++) {
-                // if the actual number of ships = the expected number of ships, set the rest of the row to water
-                if (tmp.rowCounts[y] === currentRowCounts[y][0]) tmp.floodRow(y);
-            }
-
-            // rows/columns that would be full if all unkown squares were ships
-            // see where remaining ships could fit. if one can only fit in one place, put it there and remove it from all other possibilities
+            if (square.graphicalType === GRAPHICAL_TYPES.SINGLE) tmp.setUnidirectionalWater(i);
+            else if (square.isUnidirectional()) tmp.setUnidirectionalWater(i, Ship.graphicalTypeToRelativePosition(square.graphicalType));
+            else if (square.isBidirectional()) tmp.setBidirectionalWater(i, square.graphicalType);
         }
+
+        // in the future make this not try to flood rows and columns that are already flooded
+        const currentColumnCounts = countColumns();
+        for (let x = 0; x < tmp.width; x++) {
+            // if the actual number of ships = the expected number of ships, set the rest of the column to water
+            if (tmp.columnCounts[x] === currentColumnCounts[x][0]) tmp.floodColumn(x);
+
+            // if the actual number of ships + the number of unkowns = the expected number of ships, set all to ships
+            else if (tmp.columnCounts[x] === currentColumnCounts[x][0] + currentColumnCounts[x][1]) tmp.floodColumn(x, PLAY_TYPES.SHIP);
+        }
+
+        const currentRowCounts = countRows();
+        for (let y = 0; y < tmp.width; y++) {
+            // if the actual number of ships = the expected number of ships, set the rest of the row to water
+            if (tmp.rowCounts[y] === currentRowCounts[y][0]) tmp.floodRow(y);
+
+            // if the actual number of ships + the number of unkowns = the expected number of ships, set all to ships
+            else if (tmp.rowCounts[y] === currentRowCounts[y][0] + currentRowCounts[y][1]) tmp.floodRow(y, PLAY_TYPES.SHIP);
+        }
+
+        // see where remaining ships could fit. if one can only fit in one place, put it there and remove it from all other possibilities
 
         // END OF ALL THE LOGIC
 
-        if (tmp !== cache) {
-            BoardBuilder.solve(ogBoard, tmp, iteration++ || 1);
+        // eslint-disable-next-line eqeqeq
+        if (tmp.boardState !== cache?.boardState) {
+            console.log(tmp.boardState === cache?.boardState, tmp, cache);
+            return BoardBuilder.solve(ogBoard, tmp, iteration++ || 1);
         } else {
             return tmp;
         }
