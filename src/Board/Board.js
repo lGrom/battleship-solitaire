@@ -1,6 +1,7 @@
 import React from 'react';
 import './Board.css';
 import BoardBuilder from './BoardBuilder';
+import { GRAPHICAL_TYPES } from './Ship';
 
 /**
  * The visible board
@@ -23,12 +24,15 @@ export default class Board extends React.Component {
     }
 
     solveBoard () {
-        this.setState({ board: BoardBuilder.solve(this.state.board) });
+        this.setState({ board: this.state.board.solve(this.state.board) });
     }
 
     handleClick (event, index) {
+        const ship = this.state.board.getShip(index);
+
+        if (ship.pinned) return;
+
         if (event.button === 0 || event.button === 2) {
-            const ship = this.state.board.getShip(index);
             // this makes it +1 for left click and +2 for right click (which basically works as -1, but without making it negative)
             const newType = (ship.playType + 1 + event.button / 2) % 3;
             ship.setPlayType(newType);
@@ -36,6 +40,32 @@ export default class Board extends React.Component {
         }
 
         this.state.board.computeGraphicalTypes();
+    }
+
+    svgObjectFromType (type) {
+        console.log(type);
+        switch (type) {
+        case GRAPHICAL_TYPES.SINGLE:
+            return <object type="image/svg+xml" data="./ships/single.svg">Single</object>;
+        case GRAPHICAL_TYPES.UP:
+            return <object type="image/svg+xml" data="./ships/end.svg">Up</object>;
+        case GRAPHICAL_TYPES.RIGHT:
+            return <object type="image/svg+xml" data="./ships/end.svg">Right</object>;
+        case GRAPHICAL_TYPES.LEFT:
+            return <object type="image/svg+xml" data="./ships/end.svg">Left</object>;
+        case GRAPHICAL_TYPES.DOWN:
+            return <object type="image/svg+xml" data="./ships/end.svg">Down</object>;
+        case GRAPHICAL_TYPES.SHIP:
+            return <object type="image/svg+xml" data="./ships/ship.svg">Ship</object>;
+        case GRAPHICAL_TYPES.HORIZONTAL:
+            return <object type="image/svg+xml" data="./ships/vertical-horizontal.svg">Vertical/Horizontal</object>;
+        case GRAPHICAL_TYPES.VERTICAL:
+            return <object type="image/svg+xml" data="./ships/vertical-horizontal.svg">Vertical/Horizontal</object>;
+        case GRAPHICAL_TYPES.WATER:
+            return <object type="image/svg+xml" data="./ships/water.svg">Water</object>;
+        default:
+            return <object/>;
+        }
     }
 
     displayBoard () {
@@ -46,7 +76,7 @@ export default class Board extends React.Component {
                 onMouseUp={(event) => this.handleClick(event, index)}
                 onContextMenu={(e) => e.preventDefault()}
             >
-                {ship.toString()}
+                {this.svgObjectFromType(ship.graphicalType)}
             </div>;
         });
     }
