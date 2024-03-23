@@ -1,3 +1,4 @@
+/* eslint-disable no-undef */
 import Ship, { GRAPHICAL_TYPES, PLAY_TYPES } from './Ship';
 
 export default class BoardBuilder {
@@ -35,6 +36,7 @@ export default class BoardBuilder {
     }
 
     // could be memoized, but it's unlikely to solve the same board multiple times (for now)
+    // very broken, plase rip out and entirely replace
     /**
      * Solves the board
      * @param {BoardBuilder} ogBoard The original board to solve
@@ -42,8 +44,12 @@ export default class BoardBuilder {
      * @param {Number} [iteration]
      * @returns {BoardBuilder} The solved board
      */
-    static solve (ogBoard, cache, iteration) {
+    solve (ogBoard, cache, iteration) {
         const tmp = cache ? new BoardBuilder(cache.width, cache.height, cache, undefined, cache.columnCounts, cache.rowCounts, cache.shipsLeft) : new BoardBuilder(ogBoard.width, ogBoard.height, ogBoard, undefined, ogBoard.columnCounts, ogBoard.rowCounts, ogBoard.shipsLeft);
+
+        this.boardState = tmp;
+        alert();
+
         tmp.computeGraphicalTypes();
 
         // ALL THE LOGIC
@@ -90,6 +96,9 @@ export default class BoardBuilder {
             return counts;
         }
 
+        this.boardState = tmp;
+        alert();
+
         for (let i = 0; i < tmp.boardState.length; i++) {
             const square = tmp.boardState[i];
             if (square.graphicalType === GRAPHICAL_TYPES.SINGLE) tmp.setUnidirectionalWater(i);
@@ -97,23 +106,35 @@ export default class BoardBuilder {
             else if (square.isBidirectional()) tmp.setBidirectionalWater(i, square.graphicalType);
         }
 
+        this.boardState = tmp;
+        alert();
+
         // in the future make this not try to flood rows and columns that are already flooded
         const currentColumnCounts = countColumns();
         for (let x = 0; x < tmp.width; x++) {
             // if the actual number of ships = the expected number of ships, set the rest of the column to water
             if (tmp.columnCounts[x] === currentColumnCounts[x][0]) tmp.floodColumn(x);
 
+            this.boardState = tmp;
+            alert();
+
             // if the actual number of ships + the number of unkowns = the expected number of ships, set all to ships
-            else if (tmp.columnCounts[x] === currentColumnCounts[x][0] + currentColumnCounts[x][1]) tmp.floodColumn(x, PLAY_TYPES.SHIP);
+            if (tmp.columnCounts[x] === currentColumnCounts[x][0] + currentColumnCounts[x][1]) tmp.floodColumn(x, PLAY_TYPES.SHIP);
         }
+
+        this.boardState = tmp;
+        alert();
 
         const currentRowCounts = countRows();
         for (let y = 0; y < tmp.width; y++) {
             // if the actual number of ships = the expected number of ships, set the rest of the row to water
             if (tmp.rowCounts[y] === currentRowCounts[y][0]) tmp.floodRow(y);
 
+            this.boardState = tmp;
+            alert();
+
             // if the actual number of ships + the number of unkowns = the expected number of ships, set all to ships
-            else if (tmp.rowCounts[y] === currentRowCounts[y][0] + currentRowCounts[y][1]) tmp.floodRow(y, PLAY_TYPES.SHIP);
+            if (tmp.rowCounts[y] === currentRowCounts[y][0] + currentRowCounts[y][1]) tmp.floodRow(y, PLAY_TYPES.SHIP);
         }
 
         // see where remaining ships could fit. if one can only fit in one place, put it there and remove it from all other possibilities
@@ -122,8 +143,7 @@ export default class BoardBuilder {
 
         // eslint-disable-next-line eqeqeq
         if (tmp.boardState !== cache?.boardState) {
-            console.log(tmp.boardState === cache?.boardState, tmp, cache);
-            return BoardBuilder.solve(ogBoard, tmp, iteration++ || 1);
+            return this.solve(ogBoard, tmp, iteration++ || 1);
         } else {
             return tmp;
         }
@@ -134,7 +154,7 @@ export default class BoardBuilder {
         const board = this.boardState;
 
         for (let i = 0; i < board.length; i++) {
-            if (board[i].pinned) return;
+            if (board[i].pinned) continue;
 
             // for legiability
             const [isShip, isUnkown, isWater] = [Ship.isShips, Ship.isUnkown, Ship.isWater];
@@ -150,6 +170,9 @@ export default class BoardBuilder {
             const right = this.getRelativeShip(i, RELATIVE_POSITIONS.RIGHT) || new Ship(PLAY_TYPES.WATER);
             const bottom = this.getRelativeShip(i, RELATIVE_POSITIONS.BOTTOM) || new Ship(PLAY_TYPES.WATER);
 
+            console.log('TOP: ', top);
+            console.log('BOTTOM: ', bottom);
+
             // now just do all the logic from here and have a grand ol' time
             if (isWater([left, top, right, bottom])) setType(GRAPHICAL_TYPES.SINGLE);
             else if (
@@ -161,7 +184,6 @@ export default class BoardBuilder {
                 (isShip(top) && isUnkown(bottom)) ||
                 (isShip(bottom) && isUnkown(top))) setType(GRAPHICAL_TYPES.VERTICAL);
 
-            // now for the billion ship ship water cases
             // else if (isShip(left) && )
             else if (isShip(left) && isWater(right)) setType(GRAPHICAL_TYPES.LEFT);
             else if (isShip(top) && isWater(bottom)) setType(GRAPHICAL_TYPES.UP);
@@ -343,6 +365,7 @@ export default class BoardBuilder {
         return this;
     }
 
+    /*
     // move to the react component eventually
     displayBoard () {
         return this.boardState.map((ship, index) => {
@@ -356,6 +379,7 @@ export default class BoardBuilder {
             </div>;
         });
     }
+    */
 }
 
 export const RELATIVE_POSITIONS = {
