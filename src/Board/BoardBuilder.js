@@ -13,17 +13,17 @@ export default class BoardBuilder {
      * @param {Number[]} [shipsLeft] Number of each type of ship left (eg. 3 solos and 1 double = [3, 1])
      */
     constructor (width, height, preset, solution, columnCounts, rowCounts, shipsLeft) {
-        if (preset) {
-            if (solution) {
-                // interpret everything else
-            } else if (shipsLeft && columnCounts && rowCounts) {
-                // interpret solution
-                // note: this solution should not be used for checking if the puzzle is solved, as it may not be the only one
-                // instead, create an isSolved() function to check if the board's state meets all criteria
-            }
+        // if (preset) {
+        //     if (solution) {
+        //         // interpret everything else
+        //     } else if (shipsLeft && columnCounts && rowCounts) {
+        //         // interpret solution
+        //         // note: this solution should not be used for checking if the puzzle is solved, as it may not be the only one
+        //         // instead, create an isSolved() function to check if the board's state meets all criteria
+        //     }
 
-            // check viability
-        }
+        //     // check viability
+        // }
 
         this.width = width || preset?.width || 4;
         this.height = height || preset?.height || 4;
@@ -35,8 +35,15 @@ export default class BoardBuilder {
         this.shipsLeft = shipsLeft;
     }
 
+    /**
+     * Copies the board without pointing to the origial
+     * @returns {BoardBuilder} A copy of the board
+     */
+    copy () {
+        return new BoardBuilder(this.width, this.height, this, this.solution, this.columnCounts, this.rowCounts, this.shipsLeft);
+    }
+
     // could be memoized, but it's unlikely to solve the same board multiple times (for now)
-    // very broken, plase rip out and entirely replace
     /**
      * Solves the board
      * @param {BoardBuilder} ogBoard The original board to solve
@@ -44,109 +51,15 @@ export default class BoardBuilder {
      * @param {Number} [iteration]
      * @returns {BoardBuilder} The solved board
      */
-    solve (ogBoard, cache, iteration) {
-        const tmp = cache ? new BoardBuilder(cache.width, cache.height, cache, undefined, cache.columnCounts, cache.rowCounts, cache.shipsLeft) : new BoardBuilder(ogBoard.width, ogBoard.height, ogBoard, undefined, ogBoard.columnCounts, ogBoard.rowCounts, ogBoard.shipsLeft);
+    static solve (ogBoard, cache, iteration) {
+        const tmpBoard = (cache) ? cache.copy() : ogBoard.copy();
+        iteration ||= 1; // iteration = iteration || 1
 
-        this.boardState = tmp;
-        alert();
+        console.log('TMP BOARD: ', tmpBoard);
+        console.log('CACHE: ', cache);
 
-        tmp.computeGraphicalTypes();
-
-        // ALL THE LOGIC
-
-        /**
-         * @returns {Number[][]} array of counts as [number of ships, number of unkowns]
-         */
-        function countColumns () {
-            const counts = [];
-            for (let x = 0; x < tmp.width; x++) {
-                const currentCount = [0, 0];
-
-                for (let y = 0; y < tmp.height; y++) {
-                    const shipType = tmp.getShip([x + 1, y + 1]).playType;
-
-                    if (shipType === PLAY_TYPES.SHIP) currentCount[0]++;
-                    else if (shipType === PLAY_TYPES.UKNOWN) currentCount[1]++;
-                }
-
-                counts.push(currentCount);
-            }
-
-            return counts;
-        }
-
-        /**
-         * @returns {Number[][]} array of counts as [number of ships, number of unkowns]
-         */
-        function countRows () {
-            const counts = [];
-            for (let y = 0; y < tmp.height; y++) {
-                const currentCount = [0, 0];
-
-                for (let x = 0; x < tmp.width; x++) {
-                    const shipType = tmp.getShip([x + 1, y + 1]).playType;
-
-                    if (shipType === PLAY_TYPES.SHIP) currentCount[0]++;
-                    else if (shipType === PLAY_TYPES.UKNOWN) currentCount[1]++;
-                }
-
-                counts.push(currentCount);
-            }
-
-            return counts;
-        }
-
-        this.boardState = tmp;
-        alert();
-
-        for (let i = 0; i < tmp.boardState.length; i++) {
-            const square = tmp.boardState[i];
-            if (square.graphicalType === GRAPHICAL_TYPES.SINGLE) tmp.setUnidirectionalWater(i);
-            else if (square.isUnidirectional()) tmp.setUnidirectionalWater(i, Ship.graphicalTypeToRelativePosition(square.graphicalType));
-            else if (square.isBidirectional()) tmp.setBidirectionalWater(i, square.graphicalType);
-        }
-
-        this.boardState = tmp;
-        alert();
-
-        // in the future make this not try to flood rows and columns that are already flooded
-        const currentColumnCounts = countColumns();
-        for (let x = 0; x < tmp.width; x++) {
-            // if the actual number of ships = the expected number of ships, set the rest of the column to water
-            if (tmp.columnCounts[x] === currentColumnCounts[x][0]) tmp.floodColumn(x);
-
-            this.boardState = tmp;
-            alert();
-
-            // if the actual number of ships + the number of unkowns = the expected number of ships, set all to ships
-            if (tmp.columnCounts[x] === currentColumnCounts[x][0] + currentColumnCounts[x][1]) tmp.floodColumn(x, PLAY_TYPES.SHIP);
-        }
-
-        this.boardState = tmp;
-        alert();
-
-        const currentRowCounts = countRows();
-        for (let y = 0; y < tmp.width; y++) {
-            // if the actual number of ships = the expected number of ships, set the rest of the row to water
-            if (tmp.rowCounts[y] === currentRowCounts[y][0]) tmp.floodRow(y);
-
-            this.boardState = tmp;
-            alert();
-
-            // if the actual number of ships + the number of unkowns = the expected number of ships, set all to ships
-            if (tmp.rowCounts[y] === currentRowCounts[y][0] + currentRowCounts[y][1]) tmp.floodRow(y, PLAY_TYPES.SHIP);
-        }
-
-        // see where remaining ships could fit. if one can only fit in one place, put it there and remove it from all other possibilities
-
-        // END OF ALL THE LOGIC
-
-        // eslint-disable-next-line eqeqeq
-        if (tmp.boardState !== cache?.boardState) {
-            return this.solve(ogBoard, tmp, iteration++ || 1);
-        } else {
-            return tmp;
-        }
+        if (tmpBoard === cache || iteration >= 2) return tmpBoard;
+        else return BoardBuilder.solve(ogBoard, tmpBoard, ++iteration);
     }
 
     // consistency in syntax and whatnot could use some work here
@@ -169,9 +82,6 @@ export default class BoardBuilder {
             const top = this.getRelativeShip(i, RELATIVE_POSITIONS.TOP) || new Ship(PLAY_TYPES.WATER);
             const right = this.getRelativeShip(i, RELATIVE_POSITIONS.RIGHT) || new Ship(PLAY_TYPES.WATER);
             const bottom = this.getRelativeShip(i, RELATIVE_POSITIONS.BOTTOM) || new Ship(PLAY_TYPES.WATER);
-
-            console.log('TOP: ', top);
-            console.log('BOTTOM: ', bottom);
 
             // now just do all the logic from here and have a grand ol' time
             if (isWater([left, top, right, bottom])) setType(GRAPHICAL_TYPES.SINGLE);

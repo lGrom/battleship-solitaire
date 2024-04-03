@@ -85,3 +85,10 @@ test('pinned ships', () => {
 
     expect(board.boardState).toEqual(preset.boardState);
 });
+
+test('copy', () => {
+    const board = new BoardBuilder(4, 4).setShip([2, 2], GRAPHICAL_TYPES.SINGLE, true);
+    const copy = board.copy();
+
+    expect(copy).toEqual(board);
+});
