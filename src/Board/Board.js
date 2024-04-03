@@ -24,7 +24,8 @@ export default class Board extends React.Component {
     }
 
     solveBoard () {
-        this.setState({ board: this.state.board.solve(this.state.board) });
+        // console.log(BoardBuilder.solve(this.state.board));
+        this.setState({ board: BoardBuilder.solve(this.state.board) });
     }
 
     handleClick (event, index) {
