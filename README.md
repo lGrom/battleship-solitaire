@@ -15,3 +15,4 @@ TODO:
 
 more specific things
 - [ ] make position arrays start at 0 instead of 1
+- [ ] name "uni/bi-directional" variables as "cardinal" and "orthognol" (or however it's spelled)

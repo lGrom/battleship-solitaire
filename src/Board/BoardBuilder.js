@@ -52,13 +52,72 @@ export default class BoardBuilder {
      * @returns {BoardBuilder} The solved board
      */
     static solve (ogBoard, cache, iteration) {
+        // should be replaced in the future for an adjustable setting
+        const ITERATION_LIMIT = 100;
+
         const tmpBoard = (cache) ? cache.copy() : ogBoard.copy();
-        iteration ||= 1; // iteration = iteration || 1
+        iteration ||= 1;
 
-        console.log('TMP BOARD: ', tmpBoard);
-        console.log('CACHE: ', cache);
+        /**
+         * Count unkown and ship squares in a row
+         * @param {number} y The row index (starts at 0)
+         * @returns {number[]} [#ships, #unkown]
+         */
+        function countRow (y) {
+            const counts = [0, 0];
 
-        if (tmpBoard === cache || iteration >= 2) return tmpBoard;
+            for (let x = 0; x < tmpBoard.width; x++) {
+                const ship = tmpBoard.getShip([x + 1, y + 1]);
+
+                if (ship === PLAY_TYPES.SHIP) counts[0]++;
+                if (ship === PLAY_TYPES.UKNOWN) counts[1]++;
+            }
+
+            return counts;
+        }
+
+        /**
+         * Count unkown and ship squares in a column
+         * @param {number} y The column index (starts at 0)
+         * @returns {number[]} [#ships, #unkown]
+         */
+        function countCol (x) {
+            const counts = [0, 0];
+
+            for (let y = 0; y < tmpBoard.height; y++) {
+                const ship = tmpBoard.getShip([x + 1, y + 1]);
+
+                if (ship === PLAY_TYPES.SHIP) counts[0]++;
+                if (ship === PLAY_TYPES.UKNOWN) counts[1]++;
+            }
+
+            return counts;
+        }
+
+        for (let y = 0; y < tmpBoard.height; y++) {
+            const counts = countRow(y);
+            const expected = tmpBoard.rowCounts[y];
+
+            if (counts[1] === expected) tmpBoard.floodRow(y);
+            if (counts[0] + counts[1] === expected) tmpBoard.floodRow(y, PLAY_TYPES.SHIP);
+        }
+
+        for (let x = 0; x < tmpBoard.width; x++) {
+            const counts = countCol(x);
+            const expected = tmpBoard.columnCounts[x];
+
+            if (counts[1] === expected) tmpBoard.floodColumn(x);
+            if (counts[0] + counts[1] === expected) tmpBoard.floodColumn(x, PLAY_TYPES.SHIP);
+        }
+
+        // check for full rows/cols
+        // check for rows/cols that would be full if all unkowns were ships
+        // place water/ships around ships
+        // "there's only one place it could go"
+        // "there are multiple ways it could go, but they overlap"
+        // just find everywhere it could go then combine possiblities with &&
+
+        if (tmpBoard === cache || iteration >= ITERATION_LIMIT) return tmpBoard;
         else return BoardBuilder.solve(ogBoard, tmpBoard, ++iteration);
     }
 
@@ -234,7 +293,9 @@ export default class BoardBuilder {
     setBidirectionalWater (position, orientation) {
         // could use some error handling to check if orientation is horizontal or vertical and not left or something
 
-        const excludedDirections = (orientation === GRAPHICAL_TYPES.HORIZONTAL) ? [RELATIVE_POSITIONS.LEFT, RELATIVE_POSITIONS.RIGHT] : [RELATIVE_POSITIONS.UP, RELATIVE_POSITIONS.DOWN];
+        const excludedDirections = (orientation === GRAPHICAL_TYPES.HORIZONTAL)
+            ? [RELATIVE_POSITIONS.LEFT, RELATIVE_POSITIONS.RIGHT]
+            : [RELATIVE_POSITIONS.UP, RELATIVE_POSITIONS.DOWN];
 
         for (const key in RELATIVE_POSITIONS) {
             const relativePosition = RELATIVE_POSITIONS[key];
@@ -248,7 +309,7 @@ export default class BoardBuilder {
     /**
      * Flood the column with the given type or water
      * @param {Number} column The target column's index
-     * @param {Number} type What to flood it with (defaults to water)
+     * @param {Number} [type] What to flood it with (defaults to water)
      * @returns {BoardBuilder} this
      */
     floodColumn (column, type) {
@@ -263,7 +324,7 @@ export default class BoardBuilder {
     /**
      * Flood the row with the given type or water
      * @param {Number} row The target row's index
-     * @param {Number} type What to flood it with (defaults to water)
+     * @param {Number} [type] What to flood it with (defaults to water)
      * @returns {BoardBuilder} this
      */
     floodRow (row, type) {
@@ -274,22 +335,6 @@ export default class BoardBuilder {
 
         return this;
     }
-
-    /*
-    // move to the react component eventually
-    displayBoard () {
-        return this.boardState.map((ship, index) => {
-            return <div
-                className="Square nohighlight"
-                key={index}
-                onMouseUp={(event) => this.handleClick(event, index)}
-                onContextMenu={(e) => e.preventDefault()}
-            >
-                {ship.toString()}
-            </div>;
-        });
-    }
-    */
 }
 
 export const RELATIVE_POSITIONS = {
