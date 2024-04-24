@@ -24,7 +24,6 @@ export default class Board extends React.Component {
     }
 
     solveBoard () {
-        // console.log(BoardBuilder.solve(this.state.board));
         this.setState({ board: BoardBuilder.solve(this.state.board) });
     }
 
@@ -44,10 +43,9 @@ export default class Board extends React.Component {
     }
 
     svgObjectFromType (type) {
-        console.log(type);
         switch (type) {
         case GRAPHICAL_TYPES.SINGLE:
-            return <object type="image/svg+xml" data="./ships/single.svg">Single</object>;
+            return <object type="image/svg+xml" data="./ships/single.svg">Up</object>;
         case GRAPHICAL_TYPES.UP:
             return <object type="image/svg+xml" data="./ships/end.svg">Up</object>;
         case GRAPHICAL_TYPES.RIGHT:

@@ -7,4 +7,5 @@
 object {
     pointer-events: none;
     width: 90%;
+    fill: red;
 }

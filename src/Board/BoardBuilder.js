@@ -43,7 +43,26 @@ export default class BoardBuilder {
         return new BoardBuilder(this.width, this.height, this, this.solution, this.columnCounts, this.rowCounts, this.shipsLeft);
     }
 
+    /**
+     * Compares the board states of two boards
+     * @param {BoardBuilder} comparate The board to compare with
+     * @returns {Boolean} true if equal, false if not
+     */
+    sameBoardState (comparate) {
+        if (this.height !== comparate.height || this.width !== comparate.width) return false;
+
+        for (let i = 0; i < this.boardState.length; i++) {
+            const ship = this.getShip(i);
+            const comparateShip = comparate.getShip(i);
+
+            if (!ship.equals(comparateShip)) return false;
+        }
+
+        return true;
+    }
+
     // could be memoized, but it's unlikely to solve the same board multiple times (for now)
+    // current problem: only iterates once before returning
     /**
      * Solves the board
      * @param {BoardBuilder} ogBoard The original board to solve
@@ -69,8 +88,8 @@ export default class BoardBuilder {
             for (let x = 0; x < tmpBoard.width; x++) {
                 const ship = tmpBoard.getShip([x + 1, y + 1]);
 
-                if (ship === PLAY_TYPES.SHIP) counts[0]++;
-                if (ship === PLAY_TYPES.UKNOWN) counts[1]++;
+                if (ship.playType === PLAY_TYPES.SHIP) counts[0]++;
+                if (ship.playType === PLAY_TYPES.UKNOWN) counts[1]++;
             }
 
             return counts;
@@ -87,38 +106,54 @@ export default class BoardBuilder {
             for (let y = 0; y < tmpBoard.height; y++) {
                 const ship = tmpBoard.getShip([x + 1, y + 1]);
 
-                if (ship === PLAY_TYPES.SHIP) counts[0]++;
-                if (ship === PLAY_TYPES.UKNOWN) counts[1]++;
+                if (ship.playType === PLAY_TYPES.SHIP) counts[0]++;
+                if (ship.playType === PLAY_TYPES.UKNOWN) counts[1]++;
             }
 
             return counts;
         }
 
+        // check for full or would-be-full rows/columns
+
+        console.log('Pre rows:');
+        console.log(tmpBoard);
+
         for (let y = 0; y < tmpBoard.height; y++) {
             const counts = countRow(y);
             const expected = tmpBoard.rowCounts[y];
 
-            if (counts[1] === expected) tmpBoard.floodRow(y);
+            if (counts[0] === expected) tmpBoard.floodRow(y);
             if (counts[0] + counts[1] === expected) tmpBoard.floodRow(y, PLAY_TYPES.SHIP);
         }
+
+        console.log('post');
+        console.log(tmpBoard);
 
         for (let x = 0; x < tmpBoard.width; x++) {
             const counts = countCol(x);
             const expected = tmpBoard.columnCounts[x];
 
-            if (counts[1] === expected) tmpBoard.floodColumn(x);
-            if (counts[0] + counts[1] === expected) tmpBoard.floodColumn(x, PLAY_TYPES.SHIP);
+            if (counts[0] === expected) tmpBoard.floodColumn(x);
+            if (counts[0] + counts[1] === expected) tmpBoard.floodColumn(x, PLAY_TYPES.SHIP); // somehow removes the ship's playtype
         }
 
-        // check for full rows/cols
-        // check for rows/cols that would be full if all unkowns were ships
+        for (let i = 0; i < tmpBoard.boardState.length; i++) {
+            const square = tmpBoard.getShip(i);
+
+            if (square.playType !== PLAY_TYPES.SHIP) continue;
+
+            if (square.isUnidirectional()) tmpBoard.setUnidirectionalWater(i, Ship.graphicalTypeToRelativePosition(square.graphicalType));
+            else if (square.graphicalType === GRAPHICAL_TYPES.SINGLE) tmpBoard.setUnidirectionalWater(i, null); // makes every surrounding square water
+            else if (square.isBidirectional()) tmpBoard.setBidirectionalWater(i, square.graphicalType);
+        }
+
         // place water/ships around ships
         // "there's only one place it could go"
         // "there are multiple ways it could go, but they overlap"
         // just find everywhere it could go then combine possiblities with &&
 
-        if (tmpBoard === cache || iteration >= ITERATION_LIMIT) return tmpBoard;
-        else return BoardBuilder.solve(ogBoard, tmpBoard, ++iteration);
+        if (cache?.sameBoardState(tmpBoard) || iteration >= ITERATION_LIMIT) return tmpBoard.computeGraphicalTypes();
+        else return BoardBuilder.solve(ogBoard, tmpBoard.computeGraphicalTypes(), ++iteration);
     }
 
     // consistency in syntax and whatnot could use some work here
@@ -129,7 +164,8 @@ export default class BoardBuilder {
             if (board[i].pinned) continue;
 
             // for legiability
-            const [isShip, isUnkown, isWater] = [Ship.isShips, Ship.isUnkown, Ship.isWater];
+            const [isShip, isUnkown, isWater] = [Ship.isShip, Ship.isUnkown, Ship.isWater];
+
             if (!isShip(board[i])) continue;
 
             function setType (type) {
@@ -159,6 +195,8 @@ export default class BoardBuilder {
             else if (isShip(right) && isWater(left)) setType(GRAPHICAL_TYPES.RIGHT);
             else if (isShip(bottom) && isWater(top)) setType(GRAPHICAL_TYPES.DOWN);
         }
+
+        return this;
     }
 
     /**
@@ -210,13 +248,13 @@ export default class BoardBuilder {
 
         let ship = value;
 
-        if (value instanceof Ship) ship = value;
-        else if (typeof value === 'number') ship = new Ship(value, pinned);
+        if (value instanceof Ship);
+        else if (typeof value === 'number') ship = new Ship(value, pinned); // why does this strip play types
         else throw new Error('value should be an instance of Ship or a ship type');
 
-        const tmpBoard = this.boardState;
-        tmpBoard[index] = ship;
-        this.boardState = tmpBoard;
+        const tmpBoard = this.copy();
+        tmpBoard.boardState[index] = ship;
+        this.boardState = tmpBoard.copy().boardState;
 
         return this;
     }
@@ -263,11 +301,12 @@ export default class BoardBuilder {
     setRelativeShip (position, relativePosition, value, pinned) {
         const index = this.relativePositionToIndex(position, relativePosition);
 
-        if (index === null) throw new Error('Index is not within board dimensions');
+        if (index === null) return;
 
         return this.setShip(index, value, pinned);
     }
 
+    // make this automatically infer the relative position from a ship type
     /**
      * Sets all surrounding squares to water
      * @param {Number|Number[]} position - An index or array starting at 1 as [x, y]

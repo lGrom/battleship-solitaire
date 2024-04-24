@@ -30,3 +30,11 @@ test('set types propogation', () => {
     ship.setGraphicalType(PLAY_TYPES.WATER);
     expect(ship.playType).toBe(PLAY_TYPES.WATER);
 });
+
+// this really shouldn't need to be here (but it does need to be here)
+// any time you make a ship with the ship type it removes the playtype for some reason
+test('doesn\'t delete attributes', () => {
+    expect(new Ship(PLAY_TYPES.SHIP).playType).toBeDefined();
+    expect(new Ship(PLAY_TYPES.WATER).playType).toBeDefined();
+    expect(new Ship(PLAY_TYPES.UKNOWN).playType).toBeDefined();
+});
