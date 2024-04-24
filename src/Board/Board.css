@@ -4,7 +4,7 @@
 }
 
 .Square {
-    border: 1px solid black;
+    border: 1px solid gray;
     display: flex;
     justify-content: center;
     align-items: center;
@@ -12,4 +12,8 @@
 
 .Square:hover {
     cursor: pointer;
+}
+
+.svg-path {
+    fill: white;
 }

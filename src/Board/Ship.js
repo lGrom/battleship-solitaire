@@ -64,11 +64,23 @@ export default class Ship {
     setGraphicalType (newType) {
         if (!Object.values(GRAPHICAL_TYPES).includes(newType)) throw new Error('Invalid input: newType must be a graphical type');
 
-        if (newType < PLAY_TYPES.SHIP) this.playType = newType;
+        if (newType <= PLAY_TYPES.SHIP) this.playType = newType;
         else if (newType > PLAY_TYPES.SHIP) this.playType = PLAY_TYPES.SHIP;
 
         this.graphicalType = newType;
         return this;
+    }
+
+    /**
+     * Use this instead of ===
+     * @param {Ship} comparate The ship to compare with
+     * @returns {Boolean} true if equal, false if not
+     */
+    equals (comparate) {
+        return (
+            this.graphicalType === comparate.graphicalType &&
+            this.pinned === comparate.pinned
+        );
     }
 
     /**
@@ -98,16 +110,16 @@ export default class Ship {
             }
 
             return true;
-        } else {
-            return squares.playType === type;
         }
+
+        return squares.playType === type;
     }
 
     static isWater (squares) {
         return Ship.isPlayType(squares, PLAY_TYPES.WATER);
     }
 
-    static isShips (squares) {
+    static isShip (squares) {
         return Ship.isPlayType(squares, PLAY_TYPES.SHIP);
     }
 
@@ -115,6 +127,8 @@ export default class Ship {
         return Ship.isPlayType(squares, PLAY_TYPES.UKNOWN);
     }
 
+    // redo this, maybe have it use the square's state and not be static
+    // also, make the name significantly shorter. holy crap dude
     static graphicalTypeToRelativePosition (graphicalType) {
         switch (graphicalType) {
         case GRAPHICAL_TYPES.LEFT:
