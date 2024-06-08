@@ -91,4 +91,36 @@ test('copy', () => {
     const copy = board.copy();
 
     expect(copy).toEqual(board);
+
+    // test for mutation
+    copy.setShip([1, 1], PLAY_TYPES.SHIP);
+
+    expect(copy).not.toEqual(board);
+});
+
+// test board state is equal
+test('equals', () => {
+    const board = new BoardBuilder(6, 6)
+        .setShip([5, 4], GRAPHICAL_TYPES.SINGLE)
+        .setShip([1, 6], PLAY_TYPES.WATER);
+    const sameBoard = new BoardBuilder(6, 6)
+        .setShip(22, GRAPHICAL_TYPES.SINGLE)
+        .setShip(30, PLAY_TYPES.WATER, true); // pinning it shouldn't do anything
+    const diffBoard = new BoardBuilder(6, 6)
+        .floodColumn(1)
+        .floodColumn(3)
+        .floodColumn(5)
+        .floodRow(4)
+        .floodRow(5, PLAY_TYPES.SHIP)
+        .floodColumn(2, PLAY_TYPES.SHIP)
+        .floodColumn(4, PLAY_TYPES.SHIP)
+        .computeGraphicalTypes();
+    const diffSizeBoard = new BoardBuilder(7, 6)
+        .setShip([4, 5], GRAPHICAL_TYPES.SINGLE)
+        .setShip([6, 1], PLAY_TYPES.WATER);
+
+    expect(board.sameBoardState(diffBoard)).toBeFalsy();
+    expect(board.sameBoardState(diffSizeBoard)).toBeFalsy();
+    expect(board.sameBoardState(board)).toBeTruthy();
+    expect(board.sameBoardState(sameBoard)).toBeTruthy();
 });

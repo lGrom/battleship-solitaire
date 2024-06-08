@@ -1,5 +1,5 @@
 /* eslint-disable no-undef */
-import Ship, { GRAPHICAL_TYPES, PLAY_TYPES } from './Ship';
+import Ship, { GRAPHICAL_TYPES, PLAY_TYPES } from './Ship.js';
 
 export default class BoardBuilder {
     /**
@@ -49,7 +49,7 @@ export default class BoardBuilder {
      * @returns {Boolean} true if equal, false if not
      */
     sameBoardState (comparate) {
-        if (this.height !== comparate.height || this.width !== comparate.width) return false;
+        if (!(comparate instanceof BoardBuilder) || this.height !== comparate.height || this.width !== comparate.width) return false;
 
         for (let i = 0; i < this.boardState.length; i++) {
             const ship = this.getShip(i);
@@ -62,7 +62,6 @@ export default class BoardBuilder {
     }
 
     // could be memoized, but it's unlikely to solve the same board multiple times (for now)
-    // current problem: only iterates once before returning
     /**
      * Solves the board
      * @param {BoardBuilder} ogBoard The original board to solve
@@ -115,9 +114,6 @@ export default class BoardBuilder {
 
         // check for full or would-be-full rows/columns
 
-        console.log('Pre rows:');
-        console.log(tmpBoard);
-
         for (let y = 0; y < tmpBoard.height; y++) {
             const counts = countRow(y);
             const expected = tmpBoard.rowCounts[y];
@@ -126,15 +122,12 @@ export default class BoardBuilder {
             if (counts[0] + counts[1] === expected) tmpBoard.floodRow(y, PLAY_TYPES.SHIP);
         }
 
-        console.log('post');
-        console.log(tmpBoard);
-
         for (let x = 0; x < tmpBoard.width; x++) {
             const counts = countCol(x);
             const expected = tmpBoard.columnCounts[x];
 
             if (counts[0] === expected) tmpBoard.floodColumn(x);
-            if (counts[0] + counts[1] === expected) tmpBoard.floodColumn(x, PLAY_TYPES.SHIP); // somehow removes the ship's playtype
+            if (counts[0] + counts[1] === expected) tmpBoard.floodColumn(x, PLAY_TYPES.SHIP);
         }
 
         for (let i = 0; i < tmpBoard.boardState.length; i++) {
@@ -152,7 +145,7 @@ export default class BoardBuilder {
         // "there are multiple ways it could go, but they overlap"
         // just find everywhere it could go then combine possiblities with &&
 
-        if (cache?.sameBoardState(tmpBoard) || iteration >= ITERATION_LIMIT) return tmpBoard.computeGraphicalTypes();
+        if (/* cache?.sameBoardState(tmpBoard) || */ iteration >= ITERATION_LIMIT) return tmpBoard.computeGraphicalTypes();
         else return BoardBuilder.solve(ogBoard, tmpBoard.computeGraphicalTypes(), ++iteration);
     }
 
@@ -194,6 +187,9 @@ export default class BoardBuilder {
             else if (isShip(top) && isWater(bottom)) setType(GRAPHICAL_TYPES.UP);
             else if (isShip(right) && isWater(left)) setType(GRAPHICAL_TYPES.RIGHT);
             else if (isShip(bottom) && isWater(top)) setType(GRAPHICAL_TYPES.DOWN);
+
+            // if surrounded by nothing, set unknown ship
+            else if (isUnkown([left, right, top, bottom])) setType(PLAY_TYPES.SHIP);
         }
 
         return this;
@@ -249,12 +245,14 @@ export default class BoardBuilder {
         let ship = value;
 
         if (value instanceof Ship);
-        else if (typeof value === 'number') ship = new Ship(value, pinned); // why does this strip play types
+        else if (typeof value === 'number') ship = new Ship(value, pinned);
         else throw new Error('value should be an instance of Ship or a ship type');
+
+        if (pinned && typeof pinned !== 'boolean') throw new Error('expected pinned to be boolean, received: ' + pinned);
 
         const tmpBoard = this.copy();
         tmpBoard.boardState[index] = ship;
-        this.boardState = tmpBoard.copy().boardState;
+        this.boardState = tmpBoard.boardState;
 
         return this;
     }
@@ -394,16 +392,16 @@ export const RELATIVE_POSITIONS = {
  * @returns {Ship[]}
  */
 function createBoardState (width, height, preset) {
-    if (preset) return preset.boardState;
-    else {
-        const out = [];
+    const out = [];
 
-        for (let i = 0; i < width; i++) {
-            for (let j = 0; j < height; j++) {
-                out.push(new Ship(PLAY_TYPES.UKNOWN));
-            }
+    for (let i = 0; i < width * height; i++) {
+        if (preset) {
+            const ship = preset.getShip(i);
+            out.push(new Ship(ship.graphicalType, ship.pinned));
+        } else {
+            out.push(new Ship(PLAY_TYPES.UKNOWN));
         }
-
-        return out;
     }
+
+    return out;
 }
