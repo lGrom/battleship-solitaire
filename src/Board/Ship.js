@@ -72,14 +72,13 @@ export default class Ship {
     }
 
     /**
-     * Use this instead of ===
+     * Use this instead of ===, doesn't check for pins
      * @param {Ship} comparate The ship to compare with
      * @returns {Boolean} true if equal, false if not
      */
     equals (comparate) {
         return (
-            this.graphicalType === comparate.graphicalType &&
-            this.pinned === comparate.pinned
+            this.graphicalType === comparate.graphicalType
         );
     }
 
