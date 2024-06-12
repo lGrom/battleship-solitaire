@@ -17,7 +17,6 @@ export default class Board extends React.Component {
     constructor (props) {
         super(props);
 
-        // ill fidle with the react stuff later. for now, I'll add pre-existing ships to BoardBuiler
         this.state = {
             board: new BoardBuilder(this.props.width, this.props.height, this.props.preset, undefined, this.props.columnCounts, this.props.rowCounts, this.props.shipsLeft)
         };
@@ -59,6 +58,8 @@ export default class Board extends React.Component {
         case GRAPHICAL_TYPES.HORIZONTAL:
             return <object type="image/svg+xml" data="./ships/vertical-horizontal.svg">Vertical/Horizontal</object>;
         case GRAPHICAL_TYPES.VERTICAL:
+            return <object type="image/svg+xml" data="./ships/vertical-horizontal.svg">Vertical/Horizontal</object>;
+        case GRAPHICAL_TYPES.ORTHOGONAL:
             return <object type="image/svg+xml" data="./ships/vertical-horizontal.svg">Vertical/Horizontal</object>;
         case GRAPHICAL_TYPES.WATER:
             return <object type="image/svg+xml" data="./ships/water.svg">Water</object>;
