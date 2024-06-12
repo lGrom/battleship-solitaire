@@ -9,6 +9,7 @@ TODO:
 - [X] make graphical types auto-compute
 - [X] add testing for pinned ships
 - [ ] make an automatic solver
+- [ ] make the styling automatically adjust for the width and heigh of the board
 - [ ] make a solvable board generator with with options for difficulty and guess and check
 - [ ] add styling to webpage
 - [ ] add dev documentation

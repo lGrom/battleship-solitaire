@@ -71,7 +71,7 @@ export default class BoardBuilder {
      */
     static solve (ogBoard, cache, iteration) {
         // should be replaced in the future for an adjustable setting
-        const ITERATION_LIMIT = 100;
+        const ITERATION_LIMIT = 10;
 
         const tmpBoard = (cache) ? cache.copy() : ogBoard.copy();
         iteration ||= 1;
@@ -135,9 +135,10 @@ export default class BoardBuilder {
 
             if (square.playType !== PLAY_TYPES.SHIP) continue;
 
-            if (square.isUnidirectional()) tmpBoard.setUnidirectionalWater(i, Ship.graphicalTypeToRelativePosition(square.graphicalType));
-            else if (square.graphicalType === GRAPHICAL_TYPES.SINGLE) tmpBoard.setUnidirectionalWater(i, null); // makes every surrounding square water
-            else if (square.isBidirectional()) tmpBoard.setBidirectionalWater(i, square.graphicalType);
+            if (square.isUnidirectional()) tmpBoard.setUnidirectionalShips(i, Ship.graphicalTypeToRelativePosition(square.graphicalType));
+            else if (square.graphicalType === GRAPHICAL_TYPES.SINGLE) tmpBoard.setUnidirectionalShips(i); // makes every surrounding square water
+            else if (square.isBidirectional()) tmpBoard.setBidirectionalShips(i, square.graphicalType);
+            else tmpBoard.floodCorners(i);
         }
 
         // place water/ships around ships
@@ -145,7 +146,7 @@ export default class BoardBuilder {
         // "there are multiple ways it could go, but they overlap"
         // just find everywhere it could go then combine possiblities with &&
 
-        if (/* cache?.sameBoardState(tmpBoard) || */ iteration >= ITERATION_LIMIT) return tmpBoard.computeGraphicalTypes();
+        if (cache?.sameBoardState(tmpBoard) || iteration >= ITERATION_LIMIT) return tmpBoard.computeGraphicalTypes();
         else return BoardBuilder.solve(ogBoard, tmpBoard.computeGraphicalTypes(), ++iteration);
     }
 
@@ -157,7 +158,7 @@ export default class BoardBuilder {
             if (board[i].pinned) continue;
 
             // for legiability
-            const [isShip, isUnkown, isWater] = [Ship.isShip, Ship.isUnkown, Ship.isWater];
+            const [isShip, isWater] = [Ship.isShip, Ship.isWater];
 
             if (!isShip(board[i])) continue;
 
@@ -173,14 +174,8 @@ export default class BoardBuilder {
 
             // now just do all the logic from here and have a grand ol' time
             if (isWater([left, top, right, bottom])) setType(GRAPHICAL_TYPES.SINGLE);
-            else if (
-                isShip([left, right]) ||
-                (isShip(left) && isUnkown(right)) ||
-                (isShip(right && isUnkown(left)))) setType(GRAPHICAL_TYPES.HORIZONTAL);
-            else if (
-                isShip([top, bottom]) ||
-                (isShip(top) && isUnkown(bottom)) ||
-                (isShip(bottom) && isUnkown(top))) setType(GRAPHICAL_TYPES.VERTICAL);
+            else if (isShip([left, right])) setType(GRAPHICAL_TYPES.HORIZONTAL);
+            else if (isShip([top, bottom])) setType(GRAPHICAL_TYPES.VERTICAL);
 
             // else if (isShip(left) && )
             else if (isShip(left) && isWater(right)) setType(GRAPHICAL_TYPES.LEFT);
@@ -189,7 +184,10 @@ export default class BoardBuilder {
             else if (isShip(bottom) && isWater(top)) setType(GRAPHICAL_TYPES.DOWN);
 
             // if surrounded by nothing, set unknown ship
-            else if (isUnkown([left, right, top, bottom])) setType(PLAY_TYPES.SHIP);
+            else setType(PLAY_TYPES.SHIP); // if (isUnkown([left, right, top, bottom]))
+            // i need a lot more of these for directional pieces too
+            // eg. water ship ship in a line then the water gets removed
+            // the left ship should return to just a ship, but it stays as a right ship
         }
 
         return this;
@@ -308,10 +306,10 @@ export default class BoardBuilder {
     /**
      * Sets all surrounding squares to water
      * @param {Number|Number[]} position - An index or array starting at 1 as [x, y]
-     * @param {Number} except - A relative position to set to a ship instead of water
+     * @param {Number} [except] - A relative position to set to a ship instead of water
      * @returns {BoardBuilder} this
      */
-    setUnidirectionalWater (position, except) {
+    setUnidirectionalShips (position, except) {
         for (const relativePosition in RELATIVE_POSITIONS) {
             const value = RELATIVE_POSITIONS[relativePosition];
 
@@ -327,17 +325,18 @@ export default class BoardBuilder {
      * @param {Number} orientation - GRAPHICAL.HORIZONTAL or .VERTICAL
      * @returns {BoardBuilder} this
      */
-    setBidirectionalWater (position, orientation) {
+    setBidirectionalShips (position, orientation) {
         // could use some error handling to check if orientation is horizontal or vertical and not left or something
 
-        const excludedDirections = (orientation === GRAPHICAL_TYPES.HORIZONTAL)
+        const shipDirections = (orientation === GRAPHICAL_TYPES.HORIZONTAL)
             ? [RELATIVE_POSITIONS.LEFT, RELATIVE_POSITIONS.RIGHT]
-            : [RELATIVE_POSITIONS.UP, RELATIVE_POSITIONS.DOWN];
+            : [RELATIVE_POSITIONS.TOP, RELATIVE_POSITIONS.BOTTOM];
 
         for (const key in RELATIVE_POSITIONS) {
             const relativePosition = RELATIVE_POSITIONS[key];
 
-            if (!excludedDirections.includes(relativePosition)) this.setRelativeShip(position, relativePosition, PLAY_TYPES.WATER);
+            if (!shipDirections.includes(relativePosition)) this.setRelativeShip(position, relativePosition, PLAY_TYPES.WATER);
+            else if (this.getRelativeShip(relativePosition)?.playType !== PLAY_TYPES.SHIP) this.setRelativeShip(position, relativePosition, PLAY_TYPES.SHIP);
         }
 
         return this;
@@ -370,6 +369,19 @@ export default class BoardBuilder {
             if (square.playType === PLAY_TYPES.UKNOWN) this.setShip([x + 1, row + 1], type ?? PLAY_TYPES.WATER);
         }
 
+        return this;
+    }
+
+    /**
+     * Places water in all corners around a square
+     * @param {Number|Number[]} position - An index or array starting at 1 as [x, y]
+     * @returns {BoardBuilder} this
+     */
+    floodCorners (position) {
+        this.setRelativeShip(position, RELATIVE_POSITIONS.TOP_LEFT, PLAY_TYPES.WATER);
+        this.setRelativeShip(position, RELATIVE_POSITIONS.TOP_RIGHT, PLAY_TYPES.WATER);
+        this.setRelativeShip(position, RELATIVE_POSITIONS.BOTTOM_LEFT, PLAY_TYPES.WATER);
+        this.setRelativeShip(position, RELATIVE_POSITIONS.BOTTOM_RIGHT, PLAY_TYPES.WATER);
         return this;
     }
 }

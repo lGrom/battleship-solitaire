@@ -171,6 +171,6 @@ export const GRAPHICAL_TYPES = {
     DOWN: 6,
     LEFT: 7,
 
-    VERTICAL: 8,
-    HORIZONTAL: 9
+    VERTICAL: 9,
+    HORIZONTAL: 10
 };
