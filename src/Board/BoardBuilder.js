@@ -150,6 +150,82 @@ export default class BoardBuilder {
         else return BoardBuilder.solve(ogBoard, tmpBoard.computeGraphicalTypes(), ++iteration);
     }
 
+    /**
+     * Counts runs horizontally. Excludes one long runs.
+     * @returns {Object[]}
+     */
+    countHorizontalRuns () {
+        const runs = [];
+
+        for (let y = 0; y < this.height; y++) {
+            let start;
+
+            for (let x = 0; x < this.width; x++) {
+                if (this.getShip([x + 1, y + 1]).playType !== PLAY_TYPES.WATER) {
+                    if (!start) start = [x + 1, y + 1];
+                } else if (start) {
+                    // run ended, record it
+                    runs.push({
+                        length: x - start[0] + 1,
+                        start: [start[0], y + 1],
+                        end: [x, y + 1]
+                    });
+
+                    start = undefined;
+                }
+            }
+
+            if (start) {
+                // end of the board. record any ongoing runs.
+                runs.push({
+                    length: this.width - start[0] + 1,
+                    start: [start[0] + 1, y + 1],
+                    end: [this.width, y + 1]
+                });
+            }
+        }
+
+        return runs.filter(value => value.length > 1);
+    }
+
+    /**
+     * Counts runs vertically. Excludes one long runs.
+     * @returns {Object[]}
+     */
+    countVerticalRuns () {
+        const runs = [];
+
+        for (let x = 0; x < this.width; x++) {
+            let start;
+
+            for (let y = 0; y < this.height; y++) {
+                if (this.getShip([x + 1, y + 1]).playType !== PLAY_TYPES.WATER) {
+                    if (!start) start = [x + 1, y + 1];
+                } else if (start) {
+                    // run ended, record it
+                    runs.push({
+                        length: y - start[1] + 1,
+                        start: [x + 1, start[1]],
+                        end: [x + 1, y]
+                    });
+
+                    start = undefined;
+                }
+            }
+
+            if (start) {
+                // end of the board. record any ongoing runs.
+                runs.push({
+                    length: this.height - start[1] + 1,
+                    start: [x + 1, start[0] + 1],
+                    end: [x + 1, this.height]
+                });
+            }
+        }
+
+        return runs.filter(value => value.length > 1);
+    }
+
     // consistency in syntax and whatnot could use some work here
     computeGraphicalTypes () {
         const board = this.boardState;

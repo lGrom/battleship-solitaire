@@ -1,7 +1,7 @@
 /* eslint-disable no-undef */
 import BoardBuilder, { RELATIVE_POSITIONS } from './BoardBuilder';
 import Ship, { GRAPHICAL_TYPES, PLAY_TYPES } from './Ship';
-import { act } from 'react-dom/test-utils';
+import { act } from 'react';
 
 test('board dimensions', () => {
     expect(new BoardBuilder(8, 8).width).toEqual(8);
@@ -123,4 +123,53 @@ test('equals', () => {
     expect(board.sameBoardState(diffSizeBoard)).toBeFalsy();
     expect(board.sameBoardState(board)).toBeTruthy();
     expect(board.sameBoardState(sameBoard)).toBeTruthy();
+});
+
+test('count runs', () => {
+    const board = BoardBuilder.solve(
+        new BoardBuilder(15, 15, undefined, undefined,
+            [0, 5, 6, 1, 5, 1, 5, 1, 0, 5, 3, 0, 2, 0, 1],
+            [2, 0, 1, 3, 4, 2, 3, 2, 4, 0, 4, 3, 3, 2, 2])
+            .setShip([4, 1], GRAPHICAL_TYPES.SHIP, true)
+            .setShip([7, 1], GRAPHICAL_TYPES.WATER, true)
+            .setShip([2, 3], GRAPHICAL_TYPES.WATER, true)
+            .setShip([13, 3], GRAPHICAL_TYPES.SINGLE, true)
+            .setShip([3, 4], GRAPHICAL_TYPES.LEFT, true)
+            .setShip([6, 4], GRAPHICAL_TYPES.WATER, true)
+            .setShip([11, 4], GRAPHICAL_TYPES.SHIP, true)
+            .setShip([11, 5], GRAPHICAL_TYPES.VERTICAL, true)
+            .setShip([13, 5], GRAPHICAL_TYPES.SINGLE, true)
+            .setShip([3, 6], GRAPHICAL_TYPES.DOWN, true)
+            .setShip([7, 7], GRAPHICAL_TYPES.SINGLE, true)
+            .setShip([8, 7], GRAPHICAL_TYPES.WATER, true)
+            .setShip([13, 7], GRAPHICAL_TYPES.WATER, true)
+            .setShip([7, 8], GRAPHICAL_TYPES.WATER, true)
+            .setShip([11, 8], GRAPHICAL_TYPES.WATER, true)
+            .setShip([13, 8], GRAPHICAL_TYPES.WATER, true)
+            .setShip([5, 9], GRAPHICAL_TYPES.SHIP, true)
+            .setShip([10, 9], GRAPHICAL_TYPES.WATER, true)
+            .setShip([3, 11], GRAPHICAL_TYPES.WATER, true)
+            .setShip([7, 12], GRAPHICAL_TYPES.SHIP, true)
+            .setShip([10, 12], GRAPHICAL_TYPES.SHIP, true)
+            .setShip([15, 12], GRAPHICAL_TYPES.WATER, true)
+            .setShip([3, 13], GRAPHICAL_TYPES.WATER, true)
+            .setShip([4, 13], GRAPHICAL_TYPES.WATER, true)
+            .setShip([8, 13], GRAPHICAL_TYPES.WATER, true)
+            .setShip([10, 13], GRAPHICAL_TYPES.SHIP, true)
+            .setShip([2, 14], GRAPHICAL_TYPES.UP, true)
+            .setShip([7, 14], GRAPHICAL_TYPES.WATER, true)
+            .setShip([4, 15], GRAPHICAL_TYPES.WATER, true)
+            .setShip([15, 15], GRAPHICAL_TYPES.SINGLE, true)
+            .computeGraphicalTypes()
+    );
+
+    const horizontalRuns = board.countHorizontalRuns();
+    const verticalRuns = board.countVerticalRuns();
+
+    expect(horizontalRuns[2].length).toEqual(4);
+    expect(horizontalRuns[2].start).toEqual([5, 5]);
+    expect(horizontalRuns[2].end).toEqual([8, 5]);
+    expect(verticalRuns[7].length).toEqual(5);
+    expect(verticalRuns[7].start).toEqual([10, 11]);
+    expect(verticalRuns[7].end).toEqual([10, 15]);
 });
