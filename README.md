@@ -1,4 +1,4 @@
-# Battleship solitare
+# Battleship solitaire
 [![CI - tests](https://github.com/lgrom/battleship-solitare/actions/workflows/jest.yml/badge.svg)](https://github.com/lgrom/battleship-solitare/actions/workflows/jest.yml)
 
 TODO: 
