@@ -151,17 +151,32 @@ export default class BoardBuilder {
     }
 
     /**
-     * Counts runs horizontally. Excludes one long runs.
+     * Counts the number and length of the remaining ships
+     * @returns {number[]} The number and length of ships left
+     */
+    countShipsLeft () {
+        // i think we do the runs thing then if length = 1 we check up and down for ships. if they're there, we discard it. if not, we add it as a single
+
+        const horizontalShips = this.countHorizontalRuns(true, true);
+        const verticalShips = this.countVerticalRuns(true, true);
+
+        
+    }
+
+    /**
+     * Counts runs horizontally. Filters one ship runs unless unfiltered == true
+     * @param {boolean} [onlyCountShips] -- don't include unknown squares in the count
+     * @param {boolean} [unfiltered] -- don't filter the results for one ship runs
      * @returns {Object[]}
      */
-    countHorizontalRuns () {
+    countHorizontalRuns (onlyCountShips, unfiltered) {
         const runs = [];
 
         for (let y = 0; y < this.height; y++) {
             let start;
 
             for (let x = 0; x < this.width; x++) {
-                if (this.getShip([x + 1, y + 1]).playType !== PLAY_TYPES.WATER) {
+                if (onlyCountShips ? this.getShip([x + 1, y + 1]).playType === PLAY_TYPES.SHIP : this.getShip([x + 1, y + 1]).playType !== PLAY_TYPES.WATER) {
                     if (!start) start = [x + 1, y + 1];
                 } else if (start) {
                     // run ended, record it
@@ -185,11 +200,14 @@ export default class BoardBuilder {
             }
         }
 
+        if (unfiltered) return runs;
         return runs.filter(value => value.length > 1);
     }
 
     /**
-     * Counts runs vertically. Excludes one long runs.
+     * Counts runs vertically. Filters one ship runs unless unfiltered == true
+     * @param {boolean} [onlyCountShips] -- don't include unknown squares in the count
+     * @param {boolean} [unfiltered] -- don't filter the results for one ship runs
      * @returns {Object[]}
      */
     countVerticalRuns () {
@@ -199,7 +217,7 @@ export default class BoardBuilder {
             let start;
 
             for (let y = 0; y < this.height; y++) {
-                if (this.getShip([x + 1, y + 1]).playType !== PLAY_TYPES.WATER) {
+                if (onlyCountShips ? this.getShip([x + 1, y + 1]).playType === PLAY_TYPES.SHIP : this.getShip([x + 1, y + 1]).playType !== PLAY_TYPES.WATER) {
                     if (!start) start = [x + 1, y + 1];
                 } else if (start) {
                     // run ended, record it
@@ -223,6 +241,7 @@ export default class BoardBuilder {
             }
         }
 
+        if (unfiltered) return runs;
         return runs.filter(value => value.length > 1);
     }
 
