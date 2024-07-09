@@ -3,27 +3,27 @@ import Ship, { GRAPHICAL_TYPES, PLAY_TYPES } from './Ship.js';
 
 export default class BoardBuilder {
     /**
-     * The underlying Board class. For use as a preset, supply width and height. For use as a puzzle, supply preset and either solution or verticalCount, horizontalCount, and shipsLeft.
+     * The underlying Board class. For use as a preset, supply width and height. For use as a puzzle, supply preset and either solution or verticalCount, horizontalCount, and runs.
      * @param {Number} width Width in squares
      * @param {Number} height Height in squares
      * @param {BoardBuilder} [preset] Pre-existing ships
-     * @param {BoardBuilder} [solution] Ending board (leave undefined if using vert/hoz count and shipsLeft)
+     * @param {BoardBuilder} [solution] Ending board (leave undefined if using vert/hoz count and runs)
      * @param {Number[]} [columnCounts] Number of ships in each column (left to right)
      * @param {Number[]} [rowCounts] Number of ships in each row (top to bottom)
-     * @param {Number[]} [shipsLeft] Number of each type of ship left (eg. 3 solos and 1 double = [3, 1])
+     * @param {Number[]} [runs] Number of each type of run (eg. 3 solos and 1 double = [3, 1])
      */
-    constructor (width, height, preset, solution, columnCounts, rowCounts, shipsLeft) {
+    constructor (width, height, preset, solution, columnCounts, rowCounts, runs) {
         // if (preset) {
         //     if (solution) {
         //         // interpret everything else
-        //     } else if (shipsLeft && columnCounts && rowCounts) {
+        //     } else if (runs && columnCounts && rowCounts) {
         //         // interpret solution
         //         // note: this solution should not be used for checking if the puzzle is solved, as it may not be the only one
         //         // instead, create an isSolved() function to check if the board's state meets all criteria
         //     }
 
         //     // check viability
-        // }
+        // } -TODO
 
         this.width = width || preset?.width || 4;
         this.height = height || preset?.height || 4;
@@ -32,7 +32,7 @@ export default class BoardBuilder {
         this.rowCounts = rowCounts;
         this.boardState = createBoardState(this.width, this.height, preset);
 
-        this.shipsLeft = shipsLeft;
+        this.runs = runs;
     }
 
     /**
@@ -40,7 +40,7 @@ export default class BoardBuilder {
      * @returns {BoardBuilder} A copy of the board
      */
     copy () {
-        return new BoardBuilder(this.width, this.height, this, this.solution, this.columnCounts, this.rowCounts, this.shipsLeft);
+        return new BoardBuilder(this.width, this.height, this, this.solution, this.columnCounts, this.rowCounts, this.runs);
     }
 
     /**
@@ -61,7 +61,7 @@ export default class BoardBuilder {
         return true;
     }
 
-    // could be memoized, but it's unlikely to solve the same board multiple times (for now)
+    // could be memoized, but it's unlikely to solve the same board multiple times (for now) -TODO
     /**
      * Solves the board
      * @param {BoardBuilder} ogBoard The original board to solve
@@ -130,6 +130,8 @@ export default class BoardBuilder {
             if (counts[0] + counts[1] === expected) tmpBoard.floodColumn(x, PLAY_TYPES.SHIP);
         }
 
+        // place water/ships around ships
+
         for (let i = 0; i < tmpBoard.boardState.length; i++) {
             const square = tmpBoard.getShip(i);
 
@@ -141,7 +143,6 @@ export default class BoardBuilder {
             else tmpBoard.floodCorners(i);
         }
 
-        // place water/ships around ships
         // "there's only one place it could go"
         // "there are multiple ways it could go, but they overlap"
         // just find everywhere it could go then combine possiblities with &&
@@ -151,25 +152,81 @@ export default class BoardBuilder {
     }
 
     /**
-     * Counts the number and length of the remaining ships
-     * @returns {number[]} The number and length of ships left
+     * Calculates which runs are left
+     * @returns {number[]|undefined} Number of each type of ship left (eg. 3 solos and 1 double = [3, 1])
      */
-    countShipsLeft () {
-        // i think we do the runs thing then if length = 1 we check up and down for ships. if they're there, we discard it. if not, we add it as a single
+    countRunsLeft () {
+        if (!this.runs) return;
 
-        const horizontalShips = this.countHorizontalRuns(true, true);
-        const verticalShips = this.countVerticalRuns(true, true);
+        const lengths = this.getRuns().map(run => run.length);
+        const currentRuns = [];
 
-        
+        lengths.forEach(length => {
+            const i = length - 1;
+            currentRuns[i] = (currentRuns[i] || 0) + 1;
+        });
+
+        // a .map function doesnt work here since there're holes
+        const runsLeft = [];
+        for (let i = 0; i < Math.max(currentRuns.length, this.runs.length); i++) {
+            runsLeft[i] = (this.runs[i] || 0) - (currentRuns[i] || 0);
+        }
+
+        return runsLeft;
     }
 
     /**
-     * Counts runs horizontally. Filters one ship runs unless unfiltered == true
+     * Gets the number, length, and position of all remaining runs
+     * @returns {number[]} The number, length, and position of all runs left
+     */
+    getRuns () {
+        let horizontalRuns = this.getHorizontalRuns(true, true);
+        let verticalRuns = this.getVerticalRuns(true, true);
+
+        // it's an array now because the other two are also arrays.
+        const singleRuns = [];
+
+        horizontalRuns = horizontalRuns.filter((run) => {
+            if (run.length === 1 && this.getRelativeShip(run.start, RELATIVE_POSITIONS.TOP)?.playType !== PLAY_TYPES.SHIP && this.getRelativeShip(run.start, RELATIVE_POSITIONS.BOTTOM)?.playType !== PLAY_TYPES.SHIP) singleRuns.push(run);
+            return run.length !== 1;
+        });
+
+        verticalRuns = verticalRuns.filter((run) => {
+            if (run.length === 1 && this.getRelativeShip(run.start, RELATIVE_POSITIONS.LEFT)?.playType !== PLAY_TYPES.SHIP && this.getRelativeShip(run.start, RELATIVE_POSITIONS.RIGHT)?.playType !== PLAY_TYPES.SHIP) singleRuns.push(run);
+            return run.length > 1;
+        });
+
+        const filteredSingleRuns = [];
+
+        // check if this could be replaced with a .map function -TODO
+        // filter singleRuns for duplicates
+        singleRuns.forEach((run) => {
+            let duplicate = false;
+
+            for (let i = 0; i < filteredSingleRuns.length && !duplicate; i++) {
+                const compRun = filteredSingleRuns[i];
+                if (
+                    run.length === compRun.length &&
+                    run.start[0] === compRun.start[0] &&
+                    run.start[1] === compRun.start[1] &&
+                    run.end[0] === compRun.end[0] &&
+                    run.end[1] === compRun.end[1]
+                ) duplicate = true;
+            }
+
+            if (!duplicate) filteredSingleRuns.push(run);
+        });
+
+        return filteredSingleRuns.concat(horizontalRuns, verticalRuns);
+    }
+
+    /**
+     * Counts runs horizontally. Filters one ship runs unless unfiltered is true
      * @param {boolean} [onlyCountShips] -- don't include unknown squares in the count
      * @param {boolean} [unfiltered] -- don't filter the results for one ship runs
      * @returns {Object[]}
      */
-    countHorizontalRuns (onlyCountShips, unfiltered) {
+    getHorizontalRuns (onlyCountShips, unfiltered) {
         const runs = [];
 
         for (let y = 0; y < this.height; y++) {
@@ -182,7 +239,7 @@ export default class BoardBuilder {
                     // run ended, record it
                     runs.push({
                         length: x - start[0] + 1,
-                        start: [start[0], y + 1],
+                        start,
                         end: [x, y + 1]
                     });
 
@@ -194,7 +251,7 @@ export default class BoardBuilder {
                 // end of the board. record any ongoing runs.
                 runs.push({
                     length: this.width - start[0] + 1,
-                    start: [start[0] + 1, y + 1],
+                    start,
                     end: [this.width, y + 1]
                 });
             }
@@ -210,7 +267,7 @@ export default class BoardBuilder {
      * @param {boolean} [unfiltered] -- don't filter the results for one ship runs
      * @returns {Object[]}
      */
-    countVerticalRuns () {
+    getVerticalRuns (onlyCountShips, unfiltered) {
         const runs = [];
 
         for (let x = 0; x < this.width; x++) {
@@ -235,7 +292,7 @@ export default class BoardBuilder {
                 // end of the board. record any ongoing runs.
                 runs.push({
                     length: this.height - start[1] + 1,
-                    start: [x + 1, start[0] + 1],
+                    start,
                     end: [x + 1, this.height]
                 });
             }
@@ -295,7 +352,7 @@ export default class BoardBuilder {
     coordinatesToIndex (coordinates) {
         const [x, y] = coordinates;
 
-        if (x > this.width || y > this.height) {
+        if (x < 1 || x > this.width || y < 1 || y > this.height) {
             throw new Error('Invalid input: coordinates must not exceed board dimensions');
         }
 
@@ -397,7 +454,7 @@ export default class BoardBuilder {
         return this.setShip(index, value, pinned);
     }
 
-    // make this automatically infer the relative position from a ship type
+    // make this automatically infer the relative position from a ship type -TODO
     /**
      * Sets all surrounding squares to water
      * @param {Number|Number[]} position - An index or array starting at 1 as [x, y]
@@ -421,7 +478,7 @@ export default class BoardBuilder {
      * @returns {BoardBuilder} this
      */
     setBidirectionalShips (position, orientation) {
-        // could use some error handling to check if orientation is horizontal or vertical and not left or something
+        // could use some error handling to check if orientation is horizontal or vertical and not left or something -TODO
 
         const shipDirections = (orientation === GRAPHICAL_TYPES.HORIZONTAL)
             ? [RELATIVE_POSITIONS.LEFT, RELATIVE_POSITIONS.RIGHT]
