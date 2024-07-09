@@ -23,3 +23,5 @@ to finish solving:
 - [X] function to check for runs
 - [ ] function to update shipsLeft, maybe memoized in the future
 - [ ] check where the longest ship could fit, then re-run the 
+
+PS: for the countHorizontal/VerticalRuns functions you could update them to use indexes instead of position arrays. then instead of having an array of objects with length, start, and end properties, you just get the array's length, the first index, or the last index

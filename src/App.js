@@ -53,7 +53,14 @@ class App extends React.Component {
     render () {
         return (
             <div className="App">
-                <Board preset={preset} width={15} height={15} columnCounts={[0, 5, 6, 1, 5, 1, 5, 1, 0, 5, 3, 0, 2, 0, 1]} rowCounts={[2, 0, 1, 3, 4, 2, 3, 2, 4, 0, 4, 3, 3, 2, 2]}/>
+                <Board
+                    preset={preset}
+                    width={15}
+                    height={15}
+                    columnCounts={[0, 5, 6, 1, 5, 1, 5, 1, 0, 5, 3, 0, 2, 0, 1]}
+                    rowCounts={[2, 0, 1, 3, 4, 2, 3, 2, 4, 0, 4, 3, 3, 2, 2]}
+                    runs={[5, 4, 3, 2, 1]}
+                />
             </div>
         );
     }
