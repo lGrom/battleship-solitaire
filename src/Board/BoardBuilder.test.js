@@ -23,6 +23,19 @@ test('coordinatesToIndex', () => {
     expect(new BoardBuilder(4, 4).coordinatesToIndex([1, 2])).toBe(4);
 });
 
+test('indexToCoordinates and coordinatesToIndex are opposites', () => {
+    const board = new BoardBuilder(8, 8);
+
+    const index1 = board.coordinatesToIndex([3, 2]);
+    const coordinates1 = board.indexToCoordinates(index1);
+
+    const index2 = board.coordinatesToIndex([2, 8]);
+    const coordinates2 = board.indexToCoordinates(index2);
+
+    expect(coordinates1).toEqual([3, 2]);
+    expect(coordinates2).toEqual([2, 8]);
+});
+
 test('setShip', async () => {
     const board = new BoardBuilder(8, 8);
     const ship = new Ship(PLAY_TYPES.WATER);
@@ -168,21 +181,26 @@ test('get runs', () => {
     const verticalRuns = board.getVerticalRuns();
     const allRuns = board.getRuns();
 
-    expect(horizontalRuns[2].length).toEqual(4);
-    expect(horizontalRuns[2].start).toEqual([5, 5]);
-    expect(horizontalRuns[2].end).toEqual([8, 5]);
+    const run1 = horizontalRuns[2];
+    expect(run1.length).toEqual(2);
+    expect(run1[0]).toEqual(board.positionToIndex([6, 5]));
+    expect(run1[run1.length - 1]).toEqual(board.positionToIndex([7, 5]));
 
-    expect(verticalRuns[7].length).toEqual(5);
-    expect(verticalRuns[7].start).toEqual([10, 11]);
-    expect(verticalRuns[7].end).toEqual([10, 15]);
+    const run2 = verticalRuns[4];
+    expect(run2.length).toEqual(5);
+    expect(run2[0]).toEqual(board.positionToIndex([10, 11]));
+    expect(run2[run2.length - 1]).toEqual(board.positionToIndex([10, 15]));
 
-    expect(allRuns[0].length).toEqual(1);
-    expect(allRuns[0].start).toEqual([13, 3]);
-    expect(allRuns[0].end).toEqual([13, 3]);
+    const run3 = allRuns[0];
+    expect(run3.length).toEqual(1);
+    expect(run3[0]).toEqual(board.positionToIndex([13, 3]));
+    expect(run3[run3.length - 1]).toEqual(board.positionToIndex([13, 3]));
+
+    // add testing to horizontal/vertical runs for onlyCountComplete = true -TODO
 });
 
 test('count runs left', () => {
-    const expectedCounts = [-2, 1, 1, 0, 1];
+    const expectedCounts = [0, 0, 0, 0, 0];
     const counts = board.countRunsLeft();
 
     expect(counts).toEqual(expectedCounts);

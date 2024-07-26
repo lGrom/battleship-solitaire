@@ -18,7 +18,7 @@ export default class Board extends React.Component {
         super(props);
 
         this.state = {
-            board: new BoardBuilder(this.props.width, this.props.height, this.props.preset, undefined, this.props.columnCounts, this.props.rowCounts, this.props.shipsLeft)
+            board: new BoardBuilder(this.props.width, this.props.height, this.props.preset, undefined, this.props.columnCounts, this.props.rowCounts, this.props.runs)
         };
     }
 
