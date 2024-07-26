@@ -144,19 +144,16 @@ export default class BoardBuilder {
             else board.floodCorners(i);
         }
 
-        // "there's only one place it could go"
-        // "there are multiple ways it could go, but they overlap"
-        // just find everywhere it could go then combine possiblities
-        // ******* ALSO CHECK IF THERE ARE ENOUGH SPACES LEFT IN THE ROW TO SUPPORT A NEW SHIP
-        // check to make sure that there actually is at least 1 unkown square to change
-
+        // "there's only one place it could go/places it could go overlap"
+        // make this only place one ship, rerun the whole thing, then do another ship, etc.
+        // when you do that, set the for loop condition back to i > 1
         if (cache?.sameBoardState(board)) {
             const shipsLeft = board.countRunsLeft(true);
             const horizontalRuns = board.getHorizontalRuns();
             const verticalRuns = board.getVerticalRuns();
 
             // loop through each length of ship
-            for (let i = shipsLeft.length; i > 1; i--) {
+            for (let i = shipsLeft.length; i > 2; i--) {
                 const shipCount = shipsLeft[i];
 
                 if (shipCount <= 0) continue;
