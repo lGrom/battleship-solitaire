@@ -3,3 +3,9 @@
     -moz-user-select: none;
     -webkit-user-select: none;
 }
+
+object {
+    pointer-events: none;
+    width: 90%;
+    fill: red;
+}

@@ -1,12 +1,19 @@
 .Board {
     display: grid;
-    grid-template: repeat(4, 100px) / repeat(4, 100px);
+    grid-template: repeat(15, 50px) / repeat(15, 50px);
 }
 
 .Square {
-    border: 1px solid white;
+    border: 1px solid gray;
+    display: flex;
+    justify-content: center;
+    align-items: center;
 }
 
 .Square:hover {
     cursor: pointer;
+}
+
+.svg-path {
+    fill: white;
 }
