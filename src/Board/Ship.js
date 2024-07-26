@@ -97,6 +97,13 @@ export default class Ship {
     }
 
     /**
+     * @returns {boolean} true if ship is left, right, up, down, or single
+     */
+    isEnd () {
+        return [GRAPHICAL_TYPES.LEFT, GRAPHICAL_TYPES.RIGHT, GRAPHICAL_TYPES.UP, GRAPHICAL_TYPES.DOWN, GRAPHICAL_TYPES.SINGLE].includes(this.graphicalType);
+    }
+
+    /**
      * Returns true if all provided squares are a certain type
      * @param {Ship | Ship[]} squares
      * @param {number} type

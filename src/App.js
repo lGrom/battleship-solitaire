@@ -47,7 +47,9 @@ const preset = new BoardBuilder(15, 15)
     .setShip([7, 14], GRAPHICAL_TYPES.WATER, true)
     .setShip([4, 15], GRAPHICAL_TYPES.WATER, true)
     .setShip([15, 15], GRAPHICAL_TYPES.SINGLE, true)
-    .computeGraphicalTypes();
+    .computeGraphicalTypes()
+    // .setShip(202, GRAPHICAL_TYPES.SINGLE, true)
+    ;
 
 class App extends React.Component {
     render () {

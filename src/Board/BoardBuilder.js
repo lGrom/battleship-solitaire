@@ -71,11 +71,12 @@ export default class BoardBuilder {
      */
     static solve (ogBoard, cache, iteration) {
         // should be replaced in the future for an adjustable setting
-        const ITERATION_LIMIT = 10;
+        const ITERATION_LIMIT = 15;
 
-        const tmpBoard = (cache) ? cache.copy() : ogBoard.copy();
+        const board = ((cache) ? cache.copy() : ogBoard.copy()).computeGraphicalTypes();
         iteration ||= 1;
 
+        // REPLACE THESE WITH GETCOLUMN/ROWRUNS -TODO -URGENT
         /**
          * Count unkown and ship squares in a row
          * @param {number} y The row index (starts at 0)
@@ -84,8 +85,8 @@ export default class BoardBuilder {
         function countRow (y) {
             const counts = [0, 0];
 
-            for (let x = 0; x < tmpBoard.width; x++) {
-                const ship = tmpBoard.getShip([x + 1, y + 1]);
+            for (let x = 0; x < board.width; x++) {
+                const ship = board.getShip([x + 1, y + 1]);
 
                 if (ship.playType === PLAY_TYPES.SHIP) counts[0]++;
                 if (ship.playType === PLAY_TYPES.UKNOWN) counts[1]++;
@@ -102,8 +103,8 @@ export default class BoardBuilder {
         function countCol (x) {
             const counts = [0, 0];
 
-            for (let y = 0; y < tmpBoard.height; y++) {
-                const ship = tmpBoard.getShip([x + 1, y + 1]);
+            for (let y = 0; y < board.height; y++) {
+                const ship = board.getShip([x + 1, y + 1]);
 
                 if (ship.playType === PLAY_TYPES.SHIP) counts[0]++;
                 if (ship.playType === PLAY_TYPES.UKNOWN) counts[1]++;
@@ -114,51 +115,123 @@ export default class BoardBuilder {
 
         // check for full or would-be-full rows/columns
 
-        for (let y = 0; y < tmpBoard.height; y++) {
+        for (let y = 0; y < board.height; y++) {
             const counts = countRow(y);
-            const expected = tmpBoard.rowCounts[y];
+            const expected = board.rowCounts[y];
 
-            if (counts[0] === expected) tmpBoard.floodRow(y);
-            if (counts[0] + counts[1] === expected) tmpBoard.floodRow(y, PLAY_TYPES.SHIP);
+            if (counts[0] === expected) board.floodRow(y);
+            if (counts[0] + counts[1] === expected) board.floodRow(y, PLAY_TYPES.SHIP);
         }
 
-        for (let x = 0; x < tmpBoard.width; x++) {
+        for (let x = 0; x < board.width; x++) {
             const counts = countCol(x);
-            const expected = tmpBoard.columnCounts[x];
+            const expected = board.columnCounts[x];
 
-            if (counts[0] === expected) tmpBoard.floodColumn(x);
-            if (counts[0] + counts[1] === expected) tmpBoard.floodColumn(x, PLAY_TYPES.SHIP);
+            if (counts[0] === expected) board.floodColumn(x);
+            if (counts[0] + counts[1] === expected) board.floodColumn(x, PLAY_TYPES.SHIP);
         }
 
         // place water/ships around ships
 
-        for (let i = 0; i < tmpBoard.boardState.length; i++) {
-            const square = tmpBoard.getShip(i);
+        for (let i = 0; i < board.boardState.length; i++) {
+            const square = board.getShip(i);
 
             if (square.playType !== PLAY_TYPES.SHIP) continue;
 
-            if (square.isUnidirectional()) tmpBoard.setUnidirectionalShips(i, Ship.graphicalTypeToRelativePosition(square.graphicalType));
-            else if (square.graphicalType === GRAPHICAL_TYPES.SINGLE) tmpBoard.setUnidirectionalShips(i); // makes every surrounding square water
-            else if (square.isBidirectional()) tmpBoard.setBidirectionalShips(i, square.graphicalType);
-            else tmpBoard.floodCorners(i);
+            if (square.isUnidirectional()) board.setUnidirectionalShips(i, Ship.graphicalTypeToRelativePosition(square.graphicalType));
+            else if (square.graphicalType === GRAPHICAL_TYPES.SINGLE) board.setUnidirectionalShips(i); // makes every surrounding square water
+            else if (square.isBidirectional()) board.setBidirectionalShips(i, square.graphicalType);
+            else board.floodCorners(i);
         }
 
         // "there's only one place it could go"
         // "there are multiple ways it could go, but they overlap"
-        // just find everywhere it could go then combine possiblities with &&
+        // just find everywhere it could go then combine possiblities
+        // ******* ALSO CHECK IF THERE ARE ENOUGH SPACES LEFT IN THE ROW TO SUPPORT A NEW SHIP
+        // check to make sure that there actually is at least 1 unkown square to change
 
-        if (cache?.sameBoardState(tmpBoard) || iteration >= ITERATION_LIMIT) return tmpBoard.computeGraphicalTypes();
-        else return BoardBuilder.solve(ogBoard, tmpBoard.computeGraphicalTypes(), ++iteration);
+        if (cache?.sameBoardState(board)) {
+            const shipsLeft = board.countRunsLeft(true);
+            const horizontalRuns = board.getHorizontalRuns();
+            const verticalRuns = board.getVerticalRuns();
+
+            // loop through each length of ship
+            for (let i = shipsLeft.length; i > 1; i--) {
+                const shipCount = shipsLeft[i];
+
+                if (shipCount <= 0) continue;
+
+                const filteredHRuns = horizontalRuns.filter(run => run.length >= i);
+                const filteredVRuns = verticalRuns.filter(run => run.length >= i);
+
+                if (filteredHRuns.length === 0 && filteredVRuns.length === 0) continue;
+
+                const possiblities = {};
+                let totalPossibilities = 0;
+
+                function countPossibilities (run, horizontal) {
+                    for (let j = 0; j + i <= run.length; j++) {
+                        const tmpBoard = board.copy();
+                        let changed = false;
+
+                        for (let k = 0; k < i; k++) {
+                            if (tmpBoard.softSetShip(run[k + j], PLAY_TYPES.SHIP)) changed = true;
+                        }
+
+                        if (!changed) continue;
+
+                        // check if row ships > it's supposed to be
+                        if (horizontal) {
+                            const y = tmpBoard.indexToCoordinates(run[0])[1] - 1;
+                            const numShips = tmpBoard.getRowRuns(y, false, true).flat().length;
+                            if (numShips > tmpBoard.rowCounts[y]) continue;
+                        } else {
+                            const x = tmpBoard.indexToCoordinates(run[0])[0] - 1;
+                            const numShips = tmpBoard.getColumnRuns(x, false, true).flat().length;
+
+                            if (numShips > tmpBoard.columnCounts[x]) continue;
+                        }
+
+                        // check the ends of the run to see if it's really i long
+                        if (tmpBoard.getRelativeShip(run[0], horizontal ? RELATIVE_POSITIONS.LEFT : RELATIVE_POSITIONS.TOP)?.playType === PLAY_TYPES.SHIP) continue;
+                        if (tmpBoard.getRelativeShip(run[run.length - 1], horizontal ? RELATIVE_POSITIONS.RIGHT : RELATIVE_POSITIONS.BOTTOM)?.playType === PLAY_TYPES.SHIP) continue;
+
+                        for (let k = 0; k < run.length; k++) {
+                            if (possiblities[run[k + j]]) {
+                                possiblities[run[k + j]]++;
+                            } else {
+                                possiblities[run[k + j]] = 1;
+                            }
+                        }
+
+                        totalPossibilities++;
+                    }
+                }
+
+                filteredHRuns.forEach((run) => { countPossibilities(run, true); });
+                filteredVRuns.forEach((run) => { countPossibilities(run, false); });
+
+                for (const pos in possiblities) {
+                    if (possiblities[pos] === totalPossibilities) {
+                        board.setShip(Number(pos), GRAPHICAL_TYPES.SHIP);
+                    }
+                }
+            }
+        }
+
+        if (cache?.sameBoardState(board) || iteration >= ITERATION_LIMIT) return board.computeGraphicalTypes();
+        else return BoardBuilder.solve(ogBoard, board, ++iteration);
     }
 
     /**
-     * Calculates which runs are left
+     * Counts which runs are left
+     * @param {boolean} [onlyCountComplete] Only count runs that start and end with an end ship (eg. up, down, left, right). Defaults to false
      * @returns {number[]|undefined} Number of each type of ship left (eg. 3 solos and 1 double = [3, 1])
      */
-    countRunsLeft () {
+    countRunsLeft (onlyCountComplete) {
         if (!this.runs) return;
 
-        const lengths = this.getRuns().map(run => run.length);
+        const lengths = this.getRuns(onlyCountComplete).map(run => run.length);
         const currentRuns = [];
 
         lengths.forEach(length => {
@@ -177,22 +250,25 @@ export default class BoardBuilder {
 
     /**
      * Gets the number, length, and position of all remaining runs
+     * @param {boolean} [onlyCountComplete] Only count runs that start and end with an end ship (eg. up, down, left, right). Defaults to false
      * @returns {number[]} The number, length, and position of all runs left
      */
-    getRuns () {
-        let horizontalRuns = this.getHorizontalRuns(true, true);
-        let verticalRuns = this.getVerticalRuns(true, true);
+    getRuns (onlyCountComplete) {
+        let horizontalRuns = this.getHorizontalRuns(onlyCountComplete, true, true);
+        let verticalRuns = this.getVerticalRuns(onlyCountComplete, true, true);
 
-        // it's an array now because the other two are also arrays.
         const singleRuns = [];
 
+        // consider doing this by checking for duplicates across the entire thing -TODO
+        // distinguish snippets of vertical runs from solo ships
         horizontalRuns = horizontalRuns.filter((run) => {
-            if (run.length === 1 && this.getRelativeShip(run.start, RELATIVE_POSITIONS.TOP)?.playType !== PLAY_TYPES.SHIP && this.getRelativeShip(run.start, RELATIVE_POSITIONS.BOTTOM)?.playType !== PLAY_TYPES.SHIP) singleRuns.push(run);
+            if (run.length === 1 && this.getRelativeShip(run[0], RELATIVE_POSITIONS.TOP)?.playType !== PLAY_TYPES.SHIP && this.getRelativeShip(run[0], RELATIVE_POSITIONS.BOTTOM)?.playType !== PLAY_TYPES.SHIP) singleRuns.push(run);
             return run.length !== 1;
         });
 
+        // distinguish snippets of horizontal runs from solo ships
         verticalRuns = verticalRuns.filter((run) => {
-            if (run.length === 1 && this.getRelativeShip(run.start, RELATIVE_POSITIONS.LEFT)?.playType !== PLAY_TYPES.SHIP && this.getRelativeShip(run.start, RELATIVE_POSITIONS.RIGHT)?.playType !== PLAY_TYPES.SHIP) singleRuns.push(run);
+            if (run.length === 1 && this.getRelativeShip(run[0], RELATIVE_POSITIONS.LEFT)?.playType !== PLAY_TYPES.SHIP && this.getRelativeShip(run[0], RELATIVE_POSITIONS.RIGHT)?.playType !== PLAY_TYPES.SHIP) singleRuns.push(run);
             return run.length > 1;
         });
 
@@ -207,10 +283,8 @@ export default class BoardBuilder {
                 const compRun = filteredSingleRuns[i];
                 if (
                     run.length === compRun.length &&
-                    run.start[0] === compRun.start[0] &&
-                    run.start[1] === compRun.start[1] &&
-                    run.end[0] === compRun.end[0] &&
-                    run.end[1] === compRun.end[1]
+                    run[0] === compRun[0] &&
+                    run[1] === compRun[1]
                 ) duplicate = true;
             }
 
@@ -222,84 +296,99 @@ export default class BoardBuilder {
 
     /**
      * Counts runs horizontally. Filters one ship runs unless unfiltered is true
-     * @param {boolean} [onlyCountShips] -- don't include unknown squares in the count
-     * @param {boolean} [unfiltered] -- don't filter the results for one ship runs
-     * @returns {Object[]}
+     * @param {boolean} [onlyCountComplete] Only count runs that start and end with an end ship (eg. up, down, left, right). Defaults to false
+     * @param {boolean} [onlyCountShips] don't include unknown squares in the count. Defaults to false
+     * @param {boolean} [unfiltered] don't filter the results for one ship runs. Defaults to false
+     * @returns {Number[][]}
      */
-    getHorizontalRuns (onlyCountShips, unfiltered) {
+    getHorizontalRuns (onlyCountComplete, onlyCountShips, unfiltered) {
         const runs = [];
 
+        // put this in a seperate function -TODO
         for (let y = 0; y < this.height; y++) {
-            let start;
-
-            for (let x = 0; x < this.width; x++) {
-                if (onlyCountShips ? this.getShip([x + 1, y + 1]).playType === PLAY_TYPES.SHIP : this.getShip([x + 1, y + 1]).playType !== PLAY_TYPES.WATER) {
-                    if (!start) start = [x + 1, y + 1];
-                } else if (start) {
-                    // run ended, record it
-                    runs.push({
-                        length: x - start[0] + 1,
-                        start,
-                        end: [x, y + 1]
-                    });
-
-                    start = undefined;
-                }
-            }
-
-            if (start) {
-                // end of the board. record any ongoing runs.
-                runs.push({
-                    length: this.width - start[0] + 1,
-                    start,
-                    end: [this.width, y + 1]
-                });
+            for (const run of this.getRowRuns(y, onlyCountComplete, onlyCountShips)) {
+                runs.push(run);
             }
         }
 
         if (unfiltered) return runs;
-        return runs.filter(value => value.length > 1);
+        return runs.filter(run => run.length > 1);
+    }
+
+    /**
+     * Counts runs in the given row
+     * @param {boolean} [onlyCountComplete] Only count runs that start and end with an end ship (eg. up, down, left, right). Defaults to false
+     * @param {boolean} [onlyCountShips] don't include unknown squares in the count. Defaults to false
+     * @returns {Number[][]}
+     */
+    getRowRuns (y, onlyCountComplete, onlyCountShips) {
+        const runs = [];
+        let run = [];
+
+        for (let x = 0; x < this.width; x++) {
+            if (onlyCountShips ? this.getShip([x + 1, y + 1]).playType === PLAY_TYPES.SHIP : this.getShip([x + 1, y + 1]).playType !== PLAY_TYPES.WATER) {
+                run.push(this.positionToIndex([x + 1, y + 1]));
+            } else if (run[0] && (onlyCountComplete ? (this.getShip(run[0]).isEnd() && this.getShip([x, y + 1]).isEnd()) : true)) {
+                // run ended, record it
+                runs.push(run);
+                run = [];
+            }
+        }
+
+        if (run[0] && (onlyCountComplete ? (this.getShip(run[0]).isEnd() && this.getShip([this.width, y + 1]).isEnd()) : true)) {
+            // end of the board. record any ongoing runs.
+            runs.push(run);
+        }
+
+        return runs;
     }
 
     /**
      * Counts runs vertically. Filters one ship runs unless unfiltered == true
+     * @param {boolean} [onlyCountComplete] Only count runs that start and end with an end ship (eg. up, down, left, right)
      * @param {boolean} [onlyCountShips] -- don't include unknown squares in the count
      * @param {boolean} [unfiltered] -- don't filter the results for one ship runs
-     * @returns {Object[]}
+     * @returns {Number[][]}
      */
-    getVerticalRuns (onlyCountShips, unfiltered) {
+    getVerticalRuns (onlyCountComplete, onlyCountShips, unfiltered) {
         const runs = [];
 
         for (let x = 0; x < this.width; x++) {
-            let start;
-
-            for (let y = 0; y < this.height; y++) {
-                if (onlyCountShips ? this.getShip([x + 1, y + 1]).playType === PLAY_TYPES.SHIP : this.getShip([x + 1, y + 1]).playType !== PLAY_TYPES.WATER) {
-                    if (!start) start = [x + 1, y + 1];
-                } else if (start) {
-                    // run ended, record it
-                    runs.push({
-                        length: y - start[1] + 1,
-                        start: [x + 1, start[1]],
-                        end: [x + 1, y]
-                    });
-
-                    start = undefined;
-                }
-            }
-
-            if (start) {
-                // end of the board. record any ongoing runs.
-                runs.push({
-                    length: this.height - start[1] + 1,
-                    start,
-                    end: [x + 1, this.height]
-                });
+            for (const run of this.getColumnRuns(x, onlyCountComplete, onlyCountShips)) {
+                runs.push(run);
             }
         }
 
         if (unfiltered) return runs;
-        return runs.filter(value => value.length > 1);
+        return runs.filter(run => run.length > 1);
+    }
+
+    /**
+     * Counts runs in the given column
+     * @param {boolean} [onlyCountComplete] Only count runs that start and end with an end ship (eg. up, down, left, right)
+     * @param {boolean} [onlyCountShips] -- don't include unknown squares in the count
+     * @returns {Number[][]}
+     */
+    getColumnRuns (x, onlyCountComplete, onlyCountShips) {
+        const runs = [];
+        let run = [];
+
+        for (let y = 0; y < this.height; y++) {
+            if (onlyCountShips ? this.getShip([x + 1, y + 1]).playType === PLAY_TYPES.SHIP : this.getShip([x + 1, y + 1]).playType !== PLAY_TYPES.WATER) {
+                run.push(this.positionToIndex([x + 1, y + 1]));
+            } else if (run[0] && (onlyCountComplete ? (this.getShip(run[0]).isEnd() && this.getShip([x + 1, y]).isEnd()) : true)) {
+                // run ended, record it
+                runs.push(run);
+                run = [];
+            }
+        }
+
+        if (run[0] && (onlyCountComplete ? (this.getShip(run[0]).isEnd() && this.getShip([x + 1, this.height]).isEnd()) : true)) {
+            // end of the column. record any ongoing runs.
+            runs.push(run);
+        }
+
+        return runs;
     }
 
     // consistency in syntax and whatnot could use some work here
@@ -336,17 +425,14 @@ export default class BoardBuilder {
             else if (isShip(bottom) && isWater(top)) setType(GRAPHICAL_TYPES.DOWN);
 
             // if surrounded by nothing, set unknown ship
-            else setType(PLAY_TYPES.SHIP); // if (isUnkown([left, right, top, bottom]))
-            // i need a lot more of these for directional pieces too
-            // eg. water ship ship in a line then the water gets removed
-            // the left ship should return to just a ship, but it stays as a right ship
+            else setType(PLAY_TYPES.SHIP);
         }
 
         return this;
     }
 
     /**
-     * @param {Array<Number>} coordinates - An array starting at 1 as [x, y]
+     * @param {Number[]} coordinates - An array starting at 1 as [x, y]
      * @returns {Number}
      */
     coordinatesToIndex (coordinates) {
@@ -365,17 +451,29 @@ export default class BoardBuilder {
     }
 
     /**
-     * @param {Array<Number>|Number} position - An index or array starting at 1 as [x, y]
+     * @param {Number} index
+     * @returns {Number[]} An array starting at 1 as [x, y]
+     */
+    indexToCoordinates (index) {
+        if (!Number.isInteger(index)) {
+            throw new Error('Invalid input: coordinates must be integers');
+        }
+
+        return [index % this.width + 1, Math.floor(index / this.width) + 1];
+    }
+
+    /**
+     * @param {Number[]|Number} position - An index or array starting at 1 as [x, y]
      * @returns {Number}
      */
     positionToIndex (position) {
         if (typeof position === 'number' && position >= 0) return position;
         if (Array.isArray(position)) return this.coordinatesToIndex(position);
-        throw new Error('Invalid input: position must be an index or array of coordinates');
+        throw new Error(`Invalid input: position must be an index or array of coordinates. Received: (${typeof position}) ${position}`);
     }
 
     /**
-     * @param {Array<Number>|Number} position - An index or array starting at 1 as [x, y]
+     * @param {Number[]|Number} position - An index or array starting at 1 as [x, y]
      * @returns {Ship}
      */
     getShip (position) {
@@ -384,7 +482,7 @@ export default class BoardBuilder {
     }
 
     /**
-     * @param {Array<Number>|Number} position - An index or array starting at 1 as [x, y]
+     * @param {Number[]|Number} position - An index or array starting at 1 as [x, y]
      * @param {Ship|number} value - The ship object or type
      * @param {boolean} [pinned] - Should updateGraphicalTypes ignore the ship (only works if value is a ship type)
      * @returns {BoardBuild} this
@@ -408,8 +506,22 @@ export default class BoardBuilder {
     }
 
     /**
+     * Sets the ship only if the square is unkown
+     * @param {Number[]|Number} position - An index or array starting at 1 as [x, y]
+     * @param {Ship|number} value - The ship object or type
+     * @param {boolean} [pinned] - Should updateGraphicalTypes ignore the ship (only works if value is a ship type)
+     * @returns {boolean} True if the ship was set, false if not
+     */
+    softSetShip (position, value, pinned) {
+        if (this.getShip(position).playType !== PLAY_TYPES.UKNOWN) return false;
+
+        this.setShip(position, value, pinned);
+        return true;
+    }
+
+    /**
      * Converts a relative position to an absolute index
-     * @param {Array<Number>|Number} - An index or array starting at 1 as [x, y]
+     * @param {Number[]|Number} - An index or array starting at 1 as [x, y]
      * @param {Number} relativeIndex - The index relative to position
      * @returns {Number} The absolute index
      */
