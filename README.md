@@ -21,9 +21,4 @@ more specific things
 - [ ] name "uni/bi-directional" variables as "cardinal" and "orthognol" (or however it's spelled)
 - [ ] store runs as 2 dimensional arrays where inner arrays = all indexes of squares in that run instead of just storing the start, end, and length of each run.
 - [ ] add testing for execution time
-- [ ] for the countHorizontal/VerticalRuns functions you could update them to use indexes instead of position arrays. then instead of having an array of objects with length, start, and end properties, you just get the array's length, the first index, or the last index *
-
-to finish solving:
-- [X] function to check for runs
-- [X] function to update shipsLeft, maybe memoized in the future
-- [ ] check where the longest ship could fit, then re-run the 
+- [X] for the countHorizontal/VerticalRuns functions you could update them to use indexes instead of position arrays. then instead of having an array of objects with length, start, and end properties, you just get the array's length, the first index, or the last index *
