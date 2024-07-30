@@ -5,9 +5,9 @@ name: Unit tests
 
 on:
   push:
-    branches: [ "autoSolver" ]
+    branches: [ "master" ]
   pull_request:
-    branches: [ "autoSolver" ]
+    branches: [ "master" ]
 
 jobs:
   build:
