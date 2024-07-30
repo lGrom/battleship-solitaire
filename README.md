@@ -18,6 +18,6 @@ TODO:
 
 more specific things
 - [ ] make position arrays start at 0 instead of 1
-- [ ] name "uni/bi-directional" variables as "cardinal" and "orthognol" (or however it's spelled)
+- [X] name "uni/bi-directional" variables as "cardinal" and "orthognol" (or however it's spelled)
 - [X] store runs as 2 dimensional arrays where inner arrays = all indexes of squares in that run instead of just storing the start, end, and length of each run.
 - [ ] add testing for execution time
