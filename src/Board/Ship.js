@@ -85,14 +85,14 @@ export default class Ship {
     /**
      * @returns {Boolean} true if ship is left, right, up, or down
      */
-    isUnidirectional () {
+    isCardinal () {
         return [GRAPHICAL_TYPES.LEFT, GRAPHICAL_TYPES.RIGHT, GRAPHICAL_TYPES.UP, GRAPHICAL_TYPES.DOWN].includes(this.graphicalType);
     }
 
     /**
      * @returns {Boolean} true if ship is horizontal or vertical
      */
-    isBidirectional () {
+    isOrthogonal () {
         return [GRAPHICAL_TYPES.HORIZONTAL, GRAPHICAL_TYPES.VERTICAL].includes(this.graphicalType);
     }
 
