@@ -76,47 +76,10 @@ export default class BoardBuilder {
         const board = ((cache) ? cache.copy() : ogBoard.copy()).computeGraphicalTypes();
         iteration ||= 1;
 
-        // REPLACE THESE WITH GETCOLUMN/ROWRUNS -TODO -URGENT
-        /**
-         * Count unkown and ship squares in a row
-         * @param {number} y The row index (starts at 0)
-         * @returns {number[]} [#ships, #unkown]
-         */
-        function countRow (y) {
-            const counts = [0, 0];
-
-            for (let x = 0; x < board.width; x++) {
-                const ship = board.getShip([x, y]);
-
-                if (ship.playType === PLAY_TYPES.SHIP) counts[0]++;
-                if (ship.playType === PLAY_TYPES.UKNOWN) counts[1]++;
-            }
-
-            return counts;
-        }
-
-        /**
-         * Count unkown and ship squares in a column
-         * @param {number} y The column index (starts at 0)
-         * @returns {number[]} [#ships, #unkown]
-         */
-        function countCol (x) {
-            const counts = [0, 0];
-
-            for (let y = 0; y < board.height; y++) {
-                const ship = board.getShip([x, y]);
-
-                if (ship.playType === PLAY_TYPES.SHIP) counts[0]++;
-                if (ship.playType === PLAY_TYPES.UKNOWN) counts[1]++;
-            }
-
-            return counts;
-        }
-
         // check for full or would-be-full rows/columns
 
         for (let y = 0; y < board.height; y++) {
-            const counts = countRow(y);
+            const counts = board.countRow(y);
             const expected = board.rowCounts[y];
 
             if (counts[0] === expected) board.floodRow(y);
@@ -124,7 +87,7 @@ export default class BoardBuilder {
         }
 
         for (let x = 0; x < board.width; x++) {
-            const counts = countCol(x);
+            const counts = board.countCol(x);
             const expected = board.columnCounts[x];
 
             if (counts[0] === expected) board.floodColumn(x);
@@ -181,11 +144,11 @@ export default class BoardBuilder {
                         // check if row ships > it's supposed to be
                         if (horizontal) {
                             const y = tmpBoard.indexToCoordinates(run[0])[1];
-                            const numShips = tmpBoard.getRowRuns(y, false, true).flat().length;
+                            const numShips = tmpBoard.countRow(y, tmpBoard)[0];
                             if (numShips > tmpBoard.rowCounts[y]) continue;
                         } else {
                             const x = tmpBoard.indexToCoordinates(run[0])[0];
-                            const numShips = tmpBoard.getColumnRuns(x, false, true).flat().length;
+                            const numShips = tmpBoard.countCol(x, tmpBoard)[0];
 
                             if (numShips > tmpBoard.columnCounts[x]) continue;
                         }
@@ -219,6 +182,42 @@ export default class BoardBuilder {
 
         if (cache?.sameBoardState(board) || iteration >= ITERATION_LIMIT) return board.computeGraphicalTypes();
         else return BoardBuilder.solve(ogBoard, board, ++iteration);
+    }
+
+    /**
+     * Count unkown and ship squares in a column
+     * @param {number} y The column index (starts at 0)
+     * @returns {number[]} [#ships, #unkown]
+     */
+    countCol (x) {
+        const counts = [0, 0];
+
+        for (let y = 0; y < this.height; y++) {
+            const ship = this.getShip([x, y]);
+
+            if (ship.playType === PLAY_TYPES.SHIP) counts[0]++;
+            if (ship.playType === PLAY_TYPES.UKNOWN) counts[1]++;
+        }
+
+        return counts;
+    }
+
+    /**
+     * Count unkown and ship squares in a row
+     * @param {number} y The row index (starts at 0)
+     * @returns {number[]} [#ships, #unkown]
+     */
+    countRow (y) {
+        const counts = [0, 0];
+
+        for (let x = 0; x < this.width; x++) {
+            const ship = this.getShip([x, y]);
+
+            if (ship.playType === PLAY_TYPES.SHIP) counts[0]++;
+            if (ship.playType === PLAY_TYPES.UKNOWN) counts[1]++;
+        }
+
+        return counts;
     }
 
     /**
