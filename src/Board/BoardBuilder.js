@@ -138,9 +138,9 @@ export default class BoardBuilder {
 
             if (square.playType !== PLAY_TYPES.SHIP) continue;
 
-            if (square.isUnidirectional()) board.setUnidirectionalShips(i, Ship.graphicalTypeToRelativePosition(square.graphicalType));
-            else if (square.graphicalType === GRAPHICAL_TYPES.SINGLE) board.setUnidirectionalShips(i); // makes every surrounding square water
-            else if (square.isBidirectional()) board.setBidirectionalShips(i, square.graphicalType);
+            if (square.isCardinal()) board.setCardinalShips(i, Ship.graphicalTypeToRelativePosition(square.graphicalType));
+            else if (square.graphicalType === GRAPHICAL_TYPES.SINGLE) board.setCardinalShips(i); // makes every surrounding square water
+            else if (square.isOrthogonal()) board.setOrthogonalShips(i, square.graphicalType);
             else board.floodCorners(i);
         }
 
@@ -570,7 +570,7 @@ export default class BoardBuilder {
      * @param {Number} [except] - A relative position to set to a ship instead of water
      * @returns {BoardBuilder} this
      */
-    setUnidirectionalShips (position, except) {
+    setCardinalShips (position, except) {
         for (const relativePosition in RELATIVE_POSITIONS) {
             const value = RELATIVE_POSITIONS[relativePosition];
 
@@ -581,12 +581,12 @@ export default class BoardBuilder {
     }
 
     /**
-     * Sets ships on the sides of a bidirectional ship to water
+     * Sets ships on the sides of a ship to water
      * @param {Number[]|Number} position - An index or array starting at 1 as [x, y]
      * @param {Number} orientation - GRAPHICAL.HORIZONTAL or .VERTICAL
      * @returns {BoardBuilder} this
      */
-    setBidirectionalShips (position, orientation) {
+    setOrthogonalShips (position, orientation) {
         // could use some error handling to check if orientation is horizontal or vertical and not left or something -TODO
 
         const shipDirections = (orientation === GRAPHICAL_TYPES.HORIZONTAL)
