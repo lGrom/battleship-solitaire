@@ -7,8 +7,8 @@ import Ship, { GRAPHICAL_TYPES, PLAY_TYPES } from './Board/Ship';
 
 // https://www.brainbashers.com/showbattleships.asp?date=0227&size=6&puzz=A
 // const preset = new BoardBuilder(6, 6)
-//     .setShip([1, 6], PLAY_TYPES.WATER, true)
-//     .setShip([5, 4], GRAPHICAL_TYPES.SINGLE, true);
+//     .setShip([0, 5], PLAY_TYPES.WATER, true)
+//     .setShip([4, 3], GRAPHICAL_TYPES.SINGLE, true);
 
 // columnCounts={[1, 1, 4, 0, 4, 0]} rowCounts={[2, 2, 2, 1, 0, 3]
 
@@ -17,39 +17,37 @@ import Ship, { GRAPHICAL_TYPES, PLAY_TYPES } from './Board/Ship';
 
 // https://www.brainbashers.com/showbattleships.asp?date=0607&size=15&puzz=A
 const preset = new BoardBuilder(15, 15)
-    .setShip([4, 1], GRAPHICAL_TYPES.SHIP, true)
-    .setShip([7, 1], GRAPHICAL_TYPES.WATER, true)
-    .setShip([2, 3], GRAPHICAL_TYPES.WATER, true)
-    .setShip([13, 3], GRAPHICAL_TYPES.SINGLE, true)
-    .setShip([3, 4], GRAPHICAL_TYPES.LEFT, true)
-    .setShip([6, 4], GRAPHICAL_TYPES.WATER, true)
-    .setShip([11, 4], GRAPHICAL_TYPES.SHIP, true)
-    .setShip([11, 5], GRAPHICAL_TYPES.VERTICAL, true)
-    .setShip([13, 5], GRAPHICAL_TYPES.SINGLE, true)
-    .setShip([3, 6], GRAPHICAL_TYPES.DOWN, true)
-    .setShip([7, 7], GRAPHICAL_TYPES.SINGLE, true)
-    .setShip([8, 7], GRAPHICAL_TYPES.WATER, true)
-    .setShip([13, 7], GRAPHICAL_TYPES.WATER, true)
-    .setShip([7, 8], GRAPHICAL_TYPES.WATER, true)
-    .setShip([11, 8], GRAPHICAL_TYPES.WATER, true)
-    .setShip([13, 8], GRAPHICAL_TYPES.WATER, true)
-    .setShip([5, 9], GRAPHICAL_TYPES.SHIP, true)
-    .setShip([10, 9], GRAPHICAL_TYPES.WATER, true)
-    .setShip([3, 11], GRAPHICAL_TYPES.WATER, true)
-    .setShip([7, 12], GRAPHICAL_TYPES.SHIP, true)
-    .setShip([10, 12], GRAPHICAL_TYPES.SHIP, true)
-    .setShip([15, 12], GRAPHICAL_TYPES.WATER, true)
-    .setShip([3, 13], GRAPHICAL_TYPES.WATER, true)
-    .setShip([4, 13], GRAPHICAL_TYPES.WATER, true)
-    .setShip([8, 13], GRAPHICAL_TYPES.WATER, true)
-    .setShip([10, 13], GRAPHICAL_TYPES.SHIP, true)
-    .setShip([2, 14], GRAPHICAL_TYPES.UP, true)
-    .setShip([7, 14], GRAPHICAL_TYPES.WATER, true)
-    .setShip([4, 15], GRAPHICAL_TYPES.WATER, true)
-    .setShip([15, 15], GRAPHICAL_TYPES.SINGLE, true)
-    .computeGraphicalTypes()
-    // .setShip(202, GRAPHICAL_TYPES.SINGLE, true)
-    ;
+    .setShip([3, 0], GRAPHICAL_TYPES.SHIP, true)
+    .setShip([6, 0], GRAPHICAL_TYPES.WATER, true)
+    .setShip([1, 2], GRAPHICAL_TYPES.WATER, true)
+    .setShip([12, 2], GRAPHICAL_TYPES.SINGLE, true)
+    .setShip([2, 3], GRAPHICAL_TYPES.LEFT, true)
+    .setShip([5, 3], GRAPHICAL_TYPES.WATER, true)
+    .setShip([10, 3], GRAPHICAL_TYPES.SHIP, true)
+    .setShip([10, 4], GRAPHICAL_TYPES.VERTICAL, true)
+    .setShip([12, 4], GRAPHICAL_TYPES.SINGLE, true)
+    .setShip([2, 5], GRAPHICAL_TYPES.DOWN, true)
+    .setShip([6, 6], GRAPHICAL_TYPES.SINGLE, true)
+    .setShip([7, 6], GRAPHICAL_TYPES.WATER, true)
+    .setShip([12, 6], GRAPHICAL_TYPES.WATER, true)
+    .setShip([6, 7], GRAPHICAL_TYPES.WATER, true)
+    .setShip([10, 7], GRAPHICAL_TYPES.WATER, true)
+    .setShip([12, 7], GRAPHICAL_TYPES.WATER, true)
+    .setShip([4, 8], GRAPHICAL_TYPES.SHIP, true)
+    .setShip([9, 8], GRAPHICAL_TYPES.WATER, true)
+    .setShip([2, 10], GRAPHICAL_TYPES.WATER, true)
+    .setShip([6, 11], GRAPHICAL_TYPES.SHIP, true)
+    .setShip([9, 11], GRAPHICAL_TYPES.SHIP, true)
+    .setShip([14, 11], GRAPHICAL_TYPES.WATER, true)
+    .setShip([2, 12], GRAPHICAL_TYPES.WATER, true)
+    .setShip([3, 12], GRAPHICAL_TYPES.WATER, true)
+    .setShip([7, 12], GRAPHICAL_TYPES.WATER, true)
+    .setShip([9, 12], GRAPHICAL_TYPES.SHIP, true)
+    .setShip([1, 13], GRAPHICAL_TYPES.UP, true)
+    .setShip([6, 13], GRAPHICAL_TYPES.WATER, true)
+    .setShip([3, 14], GRAPHICAL_TYPES.WATER, true)
+    .setShip([14, 14], GRAPHICAL_TYPES.SINGLE, true)
+    .computeGraphicalTypes();
 
 class App extends React.Component {
     render () {
