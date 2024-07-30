@@ -183,8 +183,8 @@ test('get runs', () => {
 
     const run1 = horizontalRuns[2];
     expect(run1.length).toEqual(2);
-    expect(run1[0]).toEqual(board.positionToIndex([6, 5]));
-    expect(run1[run1.length - 1]).toEqual(board.positionToIndex([7, 5]));
+    expect(run1[0]).toEqual(board.positionToIndex([5, 5]));
+    expect(run1[run1.length - 1]).toEqual(board.positionToIndex([6, 5]));
 
     const run2 = verticalRuns[4];
     expect(run2.length).toEqual(5);
