@@ -59,8 +59,6 @@ export default class Board extends React.Component {
             return <object type="image/svg+xml" data="./ships/vertical-horizontal.svg">Vertical/Horizontal</object>;
         case GRAPHICAL_TYPES.VERTICAL:
             return <object type="image/svg+xml" data="./ships/vertical-horizontal.svg">Vertical/Horizontal</object>;
-        case GRAPHICAL_TYPES.ORTHOGONAL:
-            return <object type="image/svg+xml" data="./ships/vertical-horizontal.svg">Vertical/Horizontal</object>;
         case GRAPHICAL_TYPES.WATER:
             return <object type="image/svg+xml" data="./ships/water.svg">Water</object>;
         default:
@@ -84,7 +82,7 @@ export default class Board extends React.Component {
     render () {
         return (
             <>
-                <div className="Board">
+                <div className="Board" style={{ gridTemplate: `repeat(${this.props.width}, 50px) / repeat(${this.props.height}, 50px)` }}>
                     {this.displayBoard()}
                 </div>
                 <button onClick={() => { this.solveBoard(); }}>
