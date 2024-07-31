@@ -205,3 +205,13 @@ test('count runs left', () => {
 
     expect(counts).toEqual(expectedCounts);
 });
+
+test('presets', () => {
+    const board1 = new BoardBuilder(15, 15, board, undefined, board.columnCounts, board.rowCounts, board.runs);
+
+    expect(board1.getShip([0, 0]).equals(new Ship(PLAY_TYPES.WATER))).toBeTruthy();
+    expect(() => {
+        // eslint-disable-next-line no-new
+        new BoardBuilder(15, 16, board);
+    }).toThrow('same size as the new board');
+});
