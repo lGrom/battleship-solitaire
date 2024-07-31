@@ -1,6 +1,5 @@
 .Board {
     display: grid;
-    grid-template: repeat(15, 50px) / repeat(15, 50px);
 }
 
 .Square {
