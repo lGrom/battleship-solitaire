@@ -5,13 +5,13 @@ import { GRAPHICAL_TYPES } from './Ship';
 
 /**
  * The visible board
- * @param {Number} width Width in squares
- * @param {Number} height Height in squares
- * @param {BoardBuilder} [preset] Pre-existing ships
- * @param {BoardBuilder} [solution] Ending board (leave undefined if using vert/hoz count and shipsLeft)
- * @param {Number[]} [columnCounts] Number of ships in each column (left to right)
- * @param {Number[]} [rowCounts] Number of ships in each row (top to bottom)
- * @param {Number[]} [shipsLeft] Number of each type of ship left (eg. 3 solos and 1 double = [3, 1])
+ * @param {number} width - Width in squares
+ * @param {number} height - Height in squares
+ * @param {BoardBuilder} [preset] - Pre-existing ships
+ * @param {BoardBuilder} [solution] - Ending board (leave undefined if using vert/hoz count and shipsLeft)
+ * @param {number[]} [columnCounts] - Number of ships in each column (left to right)
+ * @param {number[]} [rowCounts] - Number of ships in each row (top to bottom)
+ * @param {number[]} [shipsLeft] - Number of each type of ship left (eg. 3 solos and 1 double = [3, 1])
  */
 export default class Board extends React.Component {
     constructor (props) {
