@@ -19,8 +19,8 @@ export default class Ship {
 
     toString () {
         switch (this.graphicalType) {
-        case GRAPHICAL_TYPES.UKNOWN:
-            return 'Uknown';
+        case GRAPHICAL_TYPES.UNKNOWN:
+            return 'Unknown';
         case GRAPHICAL_TYPES.WATER:
             return 'Water';
         case GRAPHICAL_TYPES.SHIP:
@@ -48,9 +48,10 @@ export default class Ship {
      * Set the play type of the ship
      * @param {number} newType - The type to change it to
      * @returns {Ship} this
+     * @throws {TypeError} If newType is not a play type
      */
     setPlayType (newType) {
-        if (!Object.values(PLAY_TYPES).includes(newType)) throw new Error('Invalid input: newType must be a play type');
+        if (!Object.values(PLAY_TYPES).includes(newType)) throw new TypeError(`newType must be a play type (received: ${newType})`);
 
         if (this.graphicalType < GRAPHICAL_TYPES.SHIP || newType < GRAPHICAL_TYPES.SHIP) this.setGraphicalType(newType);
 
@@ -62,9 +63,10 @@ export default class Ship {
      * Set the graphical type of the ship
      * @param {number} newType - The type to change it to
      * @returns {Ship} this
+     * @throws {TypeError} If newType is not a graphical type
      */
     setGraphicalType (newType) {
-        if (!Object.values(GRAPHICAL_TYPES).includes(newType)) throw new Error('Invalid input: newType must be a graphical type');
+        if (!Object.values(GRAPHICAL_TYPES).includes(newType)) throw new TypeError(`newType must be a graphical type (received: ${newType})`);
 
         if (newType <= PLAY_TYPES.SHIP) this.playType = newType;
         else if (newType > PLAY_TYPES.SHIP) this.playType = PLAY_TYPES.SHIP;
@@ -135,13 +137,14 @@ export default class Ship {
     }
 
     static isUnkown (squares) {
-        return Ship.isPlayType(squares, PLAY_TYPES.UKNOWN);
+        return Ship.isPlayType(squares, PLAY_TYPES.UNKNOWN);
     }
 
     /**
-     * Convert a graphical type to its coresponding relative position
+     * Convert a graphical type to its corresponding relative position
      * @param {number} graphicalType - The graphical type to convert
-     * @returns {number} The coresponding relative position
+     * @returns {number} The corresponding relative position
+     * @throws If there's no single corresponding relative position
      */
     static graphicalTypeToRelativePosition (graphicalType) {
         switch (graphicalType) {
@@ -165,7 +168,7 @@ export default class Ship {
  */
 export const PLAY_TYPES = {
     // playable/basics
-    UKNOWN: 0,
+    UNKNOWN: 0,
     WATER: 1,
     SHIP: 2
 };
@@ -175,7 +178,7 @@ export const PLAY_TYPES = {
  * @constant
  */
 export const GRAPHICAL_TYPES = {
-    UKNOWN: 0,
+    UNKNOWN: 0,
     WATER: 1,
 
     // ships
