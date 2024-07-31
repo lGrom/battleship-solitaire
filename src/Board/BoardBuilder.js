@@ -1,17 +1,21 @@
-/* eslint-disable no-undef */
+/**
+ * @typedef {number[]} Run
+ * An array of indicies representing sqaures in a run
+ */
+
 import Ship, { GRAPHICAL_TYPES, PLAY_TYPES } from './Ship.js';
 
+/**
+ * The underlying Board class. For use as a preset, supply width and height. For use as a puzzle, supply preset and either solution or verticalCount, horizontalCount, and runs.
+ * @param {number} width - Width in squares
+ * @param {number} height - Height in squares
+ * @param {BoardBuilder} [preset] - Pre-existing ships
+ * @param {BoardBuilder} [solution] - Ending board (leave undefined if using vert/hoz count and runs)
+ * @param {number[]} [columnCounts] - Number of ships in each column (left to right)
+ * @param {number[]} [rowCounts] - Number of ships in each row (top to bottom)
+ * @param {number[]} [runs] - Number of each type of run (eg. 3 solos and 1 double = [3, 1])
+ */
 export default class BoardBuilder {
-    /**
-     * The underlying Board class. For use as a preset, supply width and height. For use as a puzzle, supply preset and either solution or verticalCount, horizontalCount, and runs.
-     * @param {Number} width Width in squares
-     * @param {Number} height Height in squares
-     * @param {BoardBuilder} [preset] Pre-existing ships
-     * @param {BoardBuilder} [solution] Ending board (leave undefined if using vert/hoz count and runs)
-     * @param {Number[]} [columnCounts] Number of ships in each column (left to right)
-     * @param {Number[]} [rowCounts] Number of ships in each row (top to bottom)
-     * @param {Number[]} [runs] Number of each type of run (eg. 3 solos and 1 double = [3, 1])
-     */
     constructor (width, height, preset, solution, columnCounts, rowCounts, runs) {
         // if (preset) {
         //     if (solution) {
@@ -45,8 +49,8 @@ export default class BoardBuilder {
 
     /**
      * Compares the board states of two boards
-     * @param {BoardBuilder} comparate The board to compare with
-     * @returns {Boolean} true if equal, false if not
+     * @param {BoardBuilder} comparate - The board to compare with
+     * @returns {boolean} true if equal, false if not
      */
     sameBoardState (comparate) {
         if (!(comparate instanceof BoardBuilder) || this.height !== comparate.height || this.width !== comparate.width) return false;
@@ -64,9 +68,9 @@ export default class BoardBuilder {
     // could be memoized, but it's unlikely to solve the same board multiple times (for now) -TODO
     /**
      * Solves the board
-     * @param {BoardBuilder} ogBoard The original board to solve
-     * @param {BoardBuilder} [cache] The answer in progress
-     * @param {Number} [iteration]
+     * @param {BoardBuilder} ogBoard - The original board to solve
+     * @param {BoardBuilder} [cache] - The answer in progress
+     * @param {number} [iteration] - How many times the function has been run
      * @returns {BoardBuilder} The solved board
      */
     static solve (ogBoard, cache, iteration) {
@@ -130,6 +134,11 @@ export default class BoardBuilder {
                 const possiblities = {};
                 let totalPossibilities = 0;
 
+                /**
+                 * Counts possibilities and adds them to a list
+                 * @param {Run} run - The run to count
+                 * @param {boolean} horizontal - True if the run spans horizontally, false if not
+                 */
                 function countPossibilities (run, horizontal) {
                     for (let j = 0; j + i <= run.length; j++) {
                         const tmpBoard = board.copy();
@@ -186,7 +195,7 @@ export default class BoardBuilder {
 
     /**
      * Count unkown and ship squares in a column
-     * @param {number} y The column index (starts at 0)
+     * @param {number} x - The x position of the column
      * @returns {number[]} [#ships, #unkown]
      */
     countCol (x) {
@@ -204,7 +213,7 @@ export default class BoardBuilder {
 
     /**
      * Count unkown and ship squares in a row
-     * @param {number} y The row index (starts at 0)
+     * @param {number} y - The row index (starts at 0)
      * @returns {number[]} [#ships, #unkown]
      */
     countRow (y) {
@@ -222,8 +231,9 @@ export default class BoardBuilder {
 
     /**
      * Counts which runs are left
-     * @param {boolean} [onlyCountComplete] Only count runs that start and end with an end ship (eg. up, down, left, right). Defaults to false
-     * @returns {number[]|undefined} Number of each type of ship left (eg. 3 solos and 1 double = [3, 1])
+     * @param {boolean} [onlyCountComplete=false] - Only count runs that start and end with an end ship (eg. up, down, left, right). Defaults to false
+     * @default onlyCountComplete false
+     * @returns {number[]|undefined} The number of each type of ship left (eg. 3 solos and 1 double = [3, 1])
      */
     countRunsLeft (onlyCountComplete) {
         if (!this.runs) return;
@@ -246,8 +256,8 @@ export default class BoardBuilder {
     }
 
     /**
-     * Gets the number, length, and position of all remaining runs
-     * @param {boolean} [onlyCountComplete] Only count runs that start and end with an end ship (eg. up, down, left, right). Defaults to false
+     * Gets the number, length, and position of all remaining runs.
+     * @param {boolean} [onlyCountComplete=false] - Only count runs that start and end with an end ship (eg. up, down, left, right). Defaults to false
      * @returns {number[]} The number, length, and position of all runs left
      */
     getRuns (onlyCountComplete) {
@@ -293,10 +303,10 @@ export default class BoardBuilder {
 
     /**
      * Counts runs horizontally. Filters one ship runs unless unfiltered is true
-     * @param {boolean} [onlyCountComplete] Only count runs that start and end with an end ship (eg. up, down, left, right). Defaults to false
-     * @param {boolean} [onlyCountShips] don't include unknown squares in the count. Defaults to false
-     * @param {boolean} [unfiltered] don't filter the results for one ship runs. Defaults to false
-     * @returns {Number[][]}
+     * @param {boolean} [onlyCountComplete] - Only count runs that start and end with an end ship (eg. up, down, left, right). Defaults to false
+     * @param {boolean} [onlyCountShips] - don't include unknown squares in the count. Defaults to false
+     * @param {boolean} [unfiltered] - don't filter the results for one ship runs. Defaults to false
+     * @returns {Run[]} An array with the all horizontal runs within
      */
     getHorizontalRuns (onlyCountComplete, onlyCountShips, unfiltered) {
         const runs = [];
@@ -314,9 +324,10 @@ export default class BoardBuilder {
 
     /**
      * Counts runs in the given row
-     * @param {boolean} [onlyCountComplete] Only count runs that start and end with an end ship (eg. up, down, left, right). Defaults to false
-     * @param {boolean} [onlyCountShips] don't include unknown squares in the count. Defaults to false
-     * @returns {Number[][]}
+     * @param {number} y - The index of the row
+     * @param {boolean} [onlyCountComplete] - Only count runs that start and end with an end ship (eg. up, down, left, right). Defaults to false
+     * @param {boolean} [onlyCountShips] - don't include unknown squares in the count. Defaults to false
+     * @returns {Run[]} An array with the all the row's runs within
      */
     getRowRuns (y, onlyCountComplete, onlyCountShips) {
         const runs = [];
@@ -342,10 +353,10 @@ export default class BoardBuilder {
 
     /**
      * Counts runs vertically. Filters one ship runs unless unfiltered == true
-     * @param {boolean} [onlyCountComplete] Only count runs that start and end with an end ship (eg. up, down, left, right)
+     * @param {boolean} [onlyCountComplete] - Only count runs that start and end with an end ship (eg. up, down, left, right)
      * @param {boolean} [onlyCountShips] -- don't include unknown squares in the count
      * @param {boolean} [unfiltered] -- don't filter the results for one ship runs
-     * @returns {Number[][]}
+     * @returns {Run[]} An array with the all the vertical within
      */
     getVerticalRuns (onlyCountComplete, onlyCountShips, unfiltered) {
         const runs = [];
@@ -362,9 +373,10 @@ export default class BoardBuilder {
 
     /**
      * Counts runs in the given column
-     * @param {boolean} [onlyCountComplete] Only count runs that start and end with an end ship (eg. up, down, left, right)
+     * @param {number} x - The index of the column
+     * @param {boolean} [onlyCountComplete] - Only count runs that start and end with an end ship (eg. up, down, left, right)
      * @param {boolean} [onlyCountShips] -- don't include unknown squares in the count
-     * @returns {Number[][]}
+     * @returns {Run[]}  An array with the all the column's runs within
      */
     getColumnRuns (x, onlyCountComplete, onlyCountShips) {
         const runs = [];
@@ -399,6 +411,7 @@ export default class BoardBuilder {
 
             if (!isShip(ship)) continue;
 
+            // eslint-disable-next-line jsdoc/require-jsdoc
             function setType (type) {
                 ship.setGraphicalType(type);
             }
@@ -428,8 +441,9 @@ export default class BoardBuilder {
     }
 
     /**
-     * @param {Number[]} coordinates - An array starting at 0 as [x, y]
-     * @returns {Number}
+     * Converts a set of coordinates to an index
+     * @param {number[]} coordinates - An array starting at 0 as [x, y]
+     * @returns {number} The index
      */
     coordinatesToIndex (coordinates) {
         const [x, y] = coordinates;
@@ -447,8 +461,9 @@ export default class BoardBuilder {
     }
 
     /**
-     * @param {Number} index
-     * @returns {Number[]} An array starting at 0 as [x, y]
+     * Converts an index to a set of coordinates
+     * @param {number} index - The index
+     * @returns {number[]} An array starting at 0 as [x, y]
      */
     indexToCoordinates (index) {
         if (!Number.isInteger(index)) {
@@ -459,8 +474,9 @@ export default class BoardBuilder {
     }
 
     /**
-     * @param {Number[]|Number} position - An index or array starting at 0 as [x, y]
-     * @returns {Number}
+     * Converts a position (coordinates or index) into an index
+     * @param {number[] | number} position - An index or array starting at 0 as [x, y]
+     * @returns {number} The index
      */
     positionToIndex (position) {
         if (typeof position === 'number' && position >= 0) return position;
@@ -469,8 +485,9 @@ export default class BoardBuilder {
     }
 
     /**
-     * @param {Number[]|Number} position - An index or array starting at 0 as [x, y]
-     * @returns {Ship}
+     * Get the ship at a position
+     * @param {number[] | number} position - An index or array starting at 0 as [x, y]
+     * @returns {Ship} The ship
      */
     getShip (position) {
         const index = this.positionToIndex(position);
@@ -478,10 +495,11 @@ export default class BoardBuilder {
     }
 
     /**
-     * @param {Number[]|Number} position - An index or array starting at 0 as [x, y]
+     * Set the ship at a position
+     * @param {number[] | number} position - An index or array starting at 0 as [x, y]
      * @param {Ship|number} value - The ship object or type
      * @param {boolean} [pinned] - Should updateGraphicalTypes ignore the ship (only works if value is a ship type)
-     * @returns {BoardBuild} this
+     * @returns {BoardBuilder} this
      */
     setShip (position, value, pinned) {
         const index = this.positionToIndex(position);
@@ -503,7 +521,7 @@ export default class BoardBuilder {
 
     /**
      * Sets the ship only if the square is unkown
-     * @param {Number[]|Number} position - An index or array starting at 0 as [x, y]
+     * @param {number[] | number} position - An index or array starting at 0 as [x, y]
      * @param {Ship|number} value - The ship object or type
      * @param {boolean} [pinned] - Should updateGraphicalTypes ignore the ship (only works if value is a ship type)
      * @returns {boolean} True if the ship was set, false if not
@@ -517,9 +535,9 @@ export default class BoardBuilder {
 
     /**
      * Converts a relative position to an absolute index
-     * @param {Number[]|Number} - An index or array starting at 0 as [x, y]
-     * @param {Number} relativeIndex - The index relative to position
-     * @returns {Number} The absolute index
+     * @param {number[]|number} position - An index or array starting at 0 as [x, y]
+     * @param {number} relativePosition - The relative position
+     * @returns {number} The absolute index
      */
     relativePositionToIndex (position, relativePosition) {
         const index = this.positionToIndex(position);
@@ -538,21 +556,23 @@ export default class BoardBuilder {
     }
 
     /**
-     * @param {Number[]|Number} position - An index or array starting at 0 as [x, y]
-     * @param {Number} relativePosition - The index relative to position
-     * @returns {Ship}
+     * Get a square adjacent to the base square
+     * @param {number[] | number} basePosition - An index or array starting at 0 as [x, y]
+     * @param {number} relativePosition - The index relative to position
+     * @returns {Ship} The relative ship
      */
-    getRelativeShip (position, relativePosition) {
-        const index = this.relativePositionToIndex(position, relativePosition);
+    getRelativeShip (basePosition, relativePosition) {
+        const index = this.relativePositionToIndex(basePosition, relativePosition);
         return (index !== null) ? this.boardState[index] : null;
     }
 
     /**
-     * @param {Number[]|Number} position - An index or array starting at 0 as [x, y]
-     * @param {Number} relativePosition - The index relative to position
-     * @param {Ship|Number} value - The ship object or type
+     * Set a square adjacent to the base square
+     * @param {number[]|number} position - An index or array starting at 0 as [x, y]
+     * @param {number} relativePosition - The index relative to position
+     * @param {Ship|number} value - The ship object or type
      * @param {boolean} [pinned] - Should updateGraphicalTypes ignore the ship (only if value is a ship type)
-     * @returns {BoardBuilder} this
+     * @returns {BoardBuilder|undefined} this
      */
     setRelativeShip (position, relativePosition, value, pinned) {
         const index = this.relativePositionToIndex(position, relativePosition);
@@ -565,8 +585,8 @@ export default class BoardBuilder {
     // make this automatically infer the relative position from a ship type -TODO
     /**
      * Sets all surrounding squares to water
-     * @param {Number|Number[]} position - An index or array starting at 0 as [x, y]
-     * @param {Number} [except] - A relative position to set to a ship instead of water
+     * @param {number | number[]} position - An index or array starting at 0 as [x, y]
+     * @param {number} [except] - A relative position to set to a ship instead of water
      * @returns {BoardBuilder} this
      */
     setCardinalShips (position, except) {
@@ -581,8 +601,8 @@ export default class BoardBuilder {
 
     /**
      * Sets ships on the sides of a ship to water
-     * @param {Number[]|Number} position - An index or array starting at 0 as [x, y]
-     * @param {Number} orientation - GRAPHICAL.HORIZONTAL or .VERTICAL
+     * @param {number[] | number} position - An index or array starting at 0 as [x, y]
+     * @param {number} orientation - GRAPHICAL.HORIZONTAL or .VERTICAL
      * @returns {BoardBuilder} this
      */
     setOrthogonalShips (position, orientation) {
@@ -604,8 +624,8 @@ export default class BoardBuilder {
 
     /**
      * Flood the column with the given type or water
-     * @param {Number} column The target column's index
-     * @param {Number} [type] What to flood it with (defaults to water)
+     * @param {number} column - The target column's index
+     * @param {number} [type] - What to flood it with (defaults to water)
      * @returns {BoardBuilder} this
      */
     floodColumn (column, type) {
@@ -619,8 +639,8 @@ export default class BoardBuilder {
 
     /**
      * Flood the row with the given type or water
-     * @param {Number} row The target row's index
-     * @param {Number} [type] What to flood it with (defaults to water)
+     * @param {number} row - The target row's index
+     * @param {number} [type] - What to flood it with (defaults to water)
      * @returns {BoardBuilder} this
      */
     floodRow (row, type) {
@@ -634,7 +654,7 @@ export default class BoardBuilder {
 
     /**
      * Places water in all corners around a square
-     * @param {Number|Number[]} position - An index or array starting at 0 as [x, y]
+     * @param {number | number[]} position - An index or array starting at 0 as [x, y]
      * @returns {BoardBuilder} this
      */
     floodCorners (position) {
@@ -660,8 +680,10 @@ export const RELATIVE_POSITIONS = {
 
 /**
  * Creates the boardState array
- * @param {BoardBuilder} [preset]
- * @returns {Ship[]}
+ * @param {number} width - The width of the board
+ * @param {number} height - The height of the board
+ * @param {BoardBuilder} [preset] - The board to copy
+ * @returns {Ship[]} The board state
  */
 function createBoardState (width, height, preset) {
     const out = [];

@@ -2,15 +2,15 @@ import { RELATIVE_POSITIONS } from './BoardBuilder';
 
 /**
  * The ship class for the board
+ * @param {number} type - The play or graphical type of the ship
+ * @param {boolean} [pinned] - Should the Ship's type change (used for presets)
+ * @property {number} playType - The play type of the ship
+ * @property {number} graphicalType - The graphical type of the ship
  */
 export default class Ship {
     playType;
     graphicalType;
 
-    /**
-     * @param {Number} type - The play or graphical type of the ship
-     * @param {boolean} [pinned] - Should the Ship's type change (used for presets)
-     */
     constructor (type, pinned) {
         // sets the play and graphical types
         this.setGraphicalType(type);
@@ -45,7 +45,8 @@ export default class Ship {
     }
 
     /**
-     * @param {Number} newType
+     * Set the play type of the ship
+     * @param {number} newType - The type to change it to
      * @returns {Ship} this
      */
     setPlayType (newType) {
@@ -58,7 +59,8 @@ export default class Ship {
     }
 
     /**
-     * @param {Number} newType
+     * Set the graphical type of the ship
+     * @param {number} newType - The type to change it to
      * @returns {Ship} this
      */
     setGraphicalType (newType) {
@@ -73,8 +75,8 @@ export default class Ship {
 
     /**
      * Use this instead of ===, doesn't check for pins
-     * @param {Ship} comparate The ship to compare with
-     * @returns {Boolean} true if equal, false if not
+     * @param {Ship} comparate - The ship to compare with
+     * @returns {boolean} true if equal, false if not
      */
     equals (comparate) {
         return (
@@ -83,20 +85,23 @@ export default class Ship {
     }
 
     /**
-     * @returns {Boolean} true if ship is left, right, up, or down
+     * Checks if the ship is cardinal
+     * @returns {boolean} true if ship is left, right, up, or down
      */
     isCardinal () {
         return [GRAPHICAL_TYPES.LEFT, GRAPHICAL_TYPES.RIGHT, GRAPHICAL_TYPES.UP, GRAPHICAL_TYPES.DOWN].includes(this.graphicalType);
     }
 
     /**
-     * @returns {Boolean} true if ship is horizontal or vertical
+     * Checks if the ship is orthogonal
+     * @returns {boolean} true if ship is horizontal or vertical
      */
     isOrthogonal () {
         return [GRAPHICAL_TYPES.HORIZONTAL, GRAPHICAL_TYPES.VERTICAL].includes(this.graphicalType);
     }
 
     /**
+     * Checks if the ship is an end piece
      * @returns {boolean} true if ship is left, right, up, down, or single
      */
     isEnd () {
@@ -105,9 +110,9 @@ export default class Ship {
 
     /**
      * Returns true if all provided squares are a certain type
-     * @param {Ship | Ship[]} squares
-     * @param {number} type
-     * @returns
+     * @param {Ship|Ship[]} squares - The square(s) to check
+     * @param {number} type - The type to check the square(s) for
+     * @returns {boolean} True if the square is the given play type
      */
     static isPlayType (squares, type) {
         if (Array.isArray(squares)) {
@@ -133,8 +138,11 @@ export default class Ship {
         return Ship.isPlayType(squares, PLAY_TYPES.UKNOWN);
     }
 
-    // redo this, maybe have it use the square's state and not be static
-    // also, make the name significantly shorter. holy crap dude
+    /**
+     * Convert a graphical type to its coresponding relative position
+     * @param {number} graphicalType - The graphical type to convert
+     * @returns {number} The coresponding relative position
+     */
     static graphicalTypeToRelativePosition (graphicalType) {
         switch (graphicalType) {
         case GRAPHICAL_TYPES.LEFT:
