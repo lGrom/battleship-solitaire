@@ -15,10 +15,10 @@ test('pre-existing ships', () => {
 });
 
 test('coordinatesToIndex', () => {
-    expect(() => { new BoardBuilder().coordinatesToIndex([4, 6]); }).toThrow('Invalid input');
-    expect(() => { new BoardBuilder(8, 8).coordinatesToIndex([4, 6.2]); }).toThrow('Invalid input');
-    expect(() => { new BoardBuilder(8, 8).coordinatesToIndex([4.6, 6.2]); }).toThrow('Invalid input');
-    expect(() => { new BoardBuilder(8, 8).coordinatesToIndex([4.6, 6]); }).toThrow('Invalid input');
+    expect(() => { new BoardBuilder().coordinatesToIndex([4, 6]); }).toThrow('must be within board');
+    expect(() => { new BoardBuilder(8, 8).coordinatesToIndex([4, 6.2]); }).toThrow('must be integers');
+    expect(() => { new BoardBuilder(8, 8).coordinatesToIndex([4.6, 6.2]); }).toThrow('must be integers');
+    expect(() => { new BoardBuilder(8, 8).coordinatesToIndex([4.6, 6]); }).toThrow('must be integers');
     expect(new BoardBuilder(8, 8).coordinatesToIndex([4, 6])).toBe(52);
     expect(new BoardBuilder(4, 4).coordinatesToIndex([0, 1])).toBe(4);
 });
@@ -49,7 +49,7 @@ test('setShip', async () => {
 
 test('getShip', () => {
     const board = new BoardBuilder(4, 4);
-    const ship = new Ship(PLAY_TYPES.UKNOWN);
+    const ship = new Ship(PLAY_TYPES.UNKNOWN);
 
     expect(board.getShip([1, 2])).toEqual(ship);
     expect(board.getShip(0)).toEqual(ship);
