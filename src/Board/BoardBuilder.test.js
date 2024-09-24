@@ -1,7 +1,6 @@
 /* eslint-disable no-undef */
 import BoardBuilder, { RELATIVE_POSITIONS } from './BoardBuilder';
 import Ship, { GRAPHICAL_TYPES, PLAY_TYPES } from './Ship';
-import { act } from 'react';
 
 test('board dimensions', () => {
     expect(new BoardBuilder(8, 8).width).toEqual(8);
@@ -36,13 +35,11 @@ test('indexToCoordinates and coordinatesToIndex are opposites', () => {
     expect(coordinates2).toEqual([1, 7]);
 });
 
-test('setShip', async () => {
+test('setShip', () => {
     const board = new BoardBuilder(8, 8);
     const ship = new Ship(PLAY_TYPES.WATER);
 
-    await act(async () => {
-        await board.setShip([1, 4], ship);
-    });
+    board.setShip([1, 4], ship);
 
     expect(board.boardState[board.coordinatesToIndex([1, 4])]).toEqual(ship);
 });
@@ -211,7 +208,6 @@ test('presets', () => {
 
     expect(board1.getShip([0, 0]).equals(new Ship(PLAY_TYPES.WATER))).toBeTruthy();
     expect(() => {
-        // eslint-disable-next-line no-new
         new BoardBuilder(15, 16, board);
     }).toThrow('same size as the new board');
 });
