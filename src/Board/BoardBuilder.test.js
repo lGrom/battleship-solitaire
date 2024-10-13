@@ -42,6 +42,7 @@ test('setShip', () => {
     board.setShip([1, 4], ship);
 
     expect(board.boardState[board.coordinatesToIndex([1, 4])]).toEqual(ship);
+    expect(() => { board.setShip([1, 2], 'bad input') }).toThrow('value should be an instance of Ship or a ship type');
 });
 
 test('getShip', () => {
@@ -61,6 +62,19 @@ test('relativePositionToIndex', () => {
     expect(board.relativePositionToIndex([1, 2], RELATIVE_POSITIONS.RIGHT)).toBe(10);
     expect(board.relativePositionToIndex([1, 2], RELATIVE_POSITIONS.TOP_LEFT)).toBe(4);
     expect(board.relativePositionToIndex([1, 2], RELATIVE_POSITIONS.BOTTOM)).toBe(13);
+});
+
+test('positionToIndex', () => {
+    expect(() => { new BoardBuilder().positionToIndex([4, 6]); }).toThrow('must be within the board');
+    expect(() => { new BoardBuilder(8, 8).positionToIndex([4, 6.2]); }).toThrow('must be integers');
+    expect(() => { new BoardBuilder(8, 8).positionToIndex([4.6, 6.2]); }).toThrow('must be integers');
+    expect(() => { new BoardBuilder(8, 8).positionToIndex([4.6, 6]); }).toThrow('must be integers');
+    expect(new BoardBuilder(8, 8).positionToIndex([4, 6])).toBe(52);
+    expect(new BoardBuilder(4, 4).positionToIndex([0, 1])).toBe(4);
+    expect(new BoardBuilder(4, 4).positionToIndex(11)).toBe(11);
+    expect(new BoardBuilder(8, 8).positionToIndex(23)).toBe(23);
+
+    expect(() => { new BoardBuilder(8, 8).positionToIndex('bad input') }).toThrow('must be an index or array of coordinates')
 });
 
 test('setRelativeShip', () => {

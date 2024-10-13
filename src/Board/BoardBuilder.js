@@ -196,9 +196,9 @@ export default class BoardBuilder {
     }
 
     /**
-     * Count unkown and ship squares in a column
+     * Count unknown and ship squares in a column
      * @param {number} x - The x position of the column
-     * @returns {number[]} [#ships, #unkown]
+     * @returns {number[]} [#ships, #unknown]
      * @throws {RangeError} If x is outside of the board. Should be between 0 and this.width - 1
      */
     countCol (x) {
@@ -217,9 +217,9 @@ export default class BoardBuilder {
     }
 
     /**
-     * Count unkown and ship squares in a row
+     * Count unknown and ship squares in a row
      * @param {number} y - The row index (starts at 0)
-     * @returns {number[]} [#ships, #unkown]
+     * @returns {number[]} [#ships, #unknown]
      * @throws {RangeError} If y is outside of the board. Should be between 0 and this.height - 1
      */
     countRow (y) {
@@ -551,7 +551,7 @@ export default class BoardBuilder {
     }
 
     /**
-     * Sets the ship only if the square is unkown
+     * Sets the ship only if the square is unknown
      * @param {number[] | number} position - An index or array starting at 0 as [x, y]
      * @param {Ship|number} value - The ship object or type
      * @param {boolean} [pinned] - Should updateGraphicalTypes ignore the ship (only works if value is a ship type)
