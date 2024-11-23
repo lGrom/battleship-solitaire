@@ -1,5 +1,3 @@
-/* eslint-disable no-undef */
-
 import BoardBuilder, { RELATIVE_POSITIONS } from "./BoardBuilder"
 import Ship, { GRAPHICAL_TYPES, PLAY_TYPES } from "./Ship";
 
@@ -602,7 +600,7 @@ test('floodRow', () => {
 test('floodCorners', () => {
     const board = new BoardBuilder(4, 4);
 
-    expect(board.floodCorners([1, 1]) instanceof BoardBuilder);
+    expect(board.floodCorners([1, 1]) instanceof BoardBuilder).toBeTruthy();
     expect(board.boardState[0].playType).toBe(PLAY_TYPES.WATER);
     expect(board.boardState[2].playType).toBe(PLAY_TYPES.WATER);
     expect(board.boardState[8].playType).toBe(PLAY_TYPES.WATER);

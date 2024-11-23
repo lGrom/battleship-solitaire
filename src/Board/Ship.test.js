@@ -1,6 +1,3 @@
-// -TODO make this /* eslint-disable */ thing apply on all .test.js files automatically
-/* eslint-disable no-undef */
-
 import { RELATIVE_POSITIONS } from './BoardBuilder';
 import Ship, { GRAPHICAL_TYPES, PLAY_TYPES } from './Ship';
 
