@@ -13,6 +13,8 @@ TODO:
 - [ ] add styling to webpage
 - [ ] make a solvable board generator with with options for difficulty and guess and check
 - [ ] add dev documentation
+- [ ] rename functions to be more consistent and concise
+- [ ] improve overall code consistency
 
 more specific things
 - [ ] make the styling automatically adjust for the width and heigh of the board
