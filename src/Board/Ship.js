@@ -40,10 +40,11 @@ export default class Ship {
         case GRAPHICAL_TYPES.VERTICAL:
             return 'Vertical';
         default:
-            return this.playType;
+            throw new Error('graphicalType is not a valid graphical type');
         }
     }
 
+    // -TODO make setPlayType not call setGraphicalType and update testing accordingly
     /**
      * Set the play type of the ship
      * @param {number} newType - The type to change it to
@@ -69,7 +70,7 @@ export default class Ship {
         if (!Object.values(GRAPHICAL_TYPES).includes(newType)) throw new TypeError(`newType must be a graphical type (received: ${newType})`);
 
         if (newType <= PLAY_TYPES.SHIP) this.playType = newType;
-        else if (newType > PLAY_TYPES.SHIP) this.playType = PLAY_TYPES.SHIP;
+        else this.playType = PLAY_TYPES.SHIP;
 
         this.graphicalType = newType;
         return this;
@@ -110,6 +111,8 @@ export default class Ship {
         return [GRAPHICAL_TYPES.LEFT, GRAPHICAL_TYPES.RIGHT, GRAPHICAL_TYPES.UP, GRAPHICAL_TYPES.DOWN, GRAPHICAL_TYPES.SINGLE].includes(this.graphicalType);
     }
 
+    // -TODO make this use a spread argument instead of an array
+    // so type first then all your arguments (but can still accept an array)
     /**
      * Returns true if all provided squares are a certain type
      * @param {Ship|Ship[]} squares - The square(s) to check
@@ -136,10 +139,11 @@ export default class Ship {
         return Ship.isPlayType(squares, PLAY_TYPES.SHIP);
     }
 
-    static isUnkown (squares) {
+    static isUnknown (squares) {
         return Ship.isPlayType(squares, PLAY_TYPES.UNKNOWN);
     }
 
+    // -TODO rename this
     /**
      * Convert a graphical type to its corresponding relative position
      * @param {number} graphicalType - The graphical type to convert
