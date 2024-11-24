@@ -44,25 +44,25 @@ export default class Board extends React.Component {
     svgObjectFromType (type) {
         switch (type) {
         case GRAPHICAL_TYPES.SINGLE:
-            return <object type="image/svg+xml" data="./ships/single.svg">Up</object>;
+            return <img src="./ships/single.svg" alt="Single"/>
         case GRAPHICAL_TYPES.UP:
-            return <object type="image/svg+xml" data="./ships/end.svg">Up</object>;
+            return <img src="./ships/end.svg" alt="Up" style={{ transform: "rotate(90deg)" }}/>
         case GRAPHICAL_TYPES.RIGHT:
-            return <object type="image/svg+xml" data="./ships/end.svg">Right</object>;
+            return <img src="./ships/end.svg" alt="Right" style={{ transform: "rotate(180deg)" }}/>
         case GRAPHICAL_TYPES.LEFT:
-            return <object type="image/svg+xml" data="./ships/end.svg">Left</object>;
+            return <img src="./ships/end.svg" alt="Left"/>
         case GRAPHICAL_TYPES.DOWN:
-            return <object type="image/svg+xml" data="./ships/end.svg">Down</object>;
+            return <img src="./ships/end.svg" alt="Down" style={{ transform: "rotate(-90deg)" }}/>
         case GRAPHICAL_TYPES.SHIP:
-            return <object type="image/svg+xml" data="./ships/ship.svg">Ship</object>;
+            return <img src="./ships/ship.svg" alt="Ship"/>
         case GRAPHICAL_TYPES.HORIZONTAL:
-            return <object type="image/svg+xml" data="./ships/vertical-horizontal.svg">Vertical/Horizontal</object>;
+            return <img src="./ships/vertical-horizontal.svg" alt="Vertical/Horizontal"/>
         case GRAPHICAL_TYPES.VERTICAL:
-            return <object type="image/svg+xml" data="./ships/vertical-horizontal.svg">Vertical/Horizontal</object>;
+            return <img src="./ships/vertical-horizontal.svg" alt="Vertical/Horizontal"/>
         case GRAPHICAL_TYPES.WATER:
-            return <object type="image/svg+xml" data="./ships/water.svg">Water</object>;
+            return <img src="./ships/water.svg" alt="Water"/>
         default:
-            return <object/>;
+            return <img alt=""/>;
         }
     }
 
