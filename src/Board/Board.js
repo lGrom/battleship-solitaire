@@ -44,32 +44,32 @@ export default class Board extends React.Component {
     typeToImg (type) {
         switch (type) {
         case GRAPHICAL_TYPES.SINGLE:
-            return <img src="./ships/single.svg" alt="Single"/>
+            return <img src='./ships/single.svg' alt='Single'/>
         case GRAPHICAL_TYPES.UP:
-            return <img src="./ships/end.svg" alt="Up" style={{ transform: "rotate(90deg)" }}/>
+            return <img src='./ships/end.svg' alt='Up' style={{ transform: 'rotate(90deg)' }}/>
         case GRAPHICAL_TYPES.RIGHT:
-            return <img src="./ships/end.svg" alt="Right" style={{ transform: "rotate(180deg)" }}/>
+            return <img src='./ships/end.svg' alt='Right' style={{ transform: 'rotate(180deg)' }}/>
         case GRAPHICAL_TYPES.LEFT:
-            return <img src="./ships/end.svg" alt="Left"/>
+            return <img src='./ships/end.svg' alt='Left'/>
         case GRAPHICAL_TYPES.DOWN:
-            return <img src="./ships/end.svg" alt="Down" style={{ transform: "rotate(-90deg)" }}/>
+            return <img src='./ships/end.svg' alt='Down' style={{ transform: 'rotate(-90deg)' }}/>
         case GRAPHICAL_TYPES.SHIP:
-            return <img src="./ships/ship.svg" alt="Ship"/>
+            return <img src='./ships/ship.svg' alt='Ship'/>
         case GRAPHICAL_TYPES.HORIZONTAL:
-            return <img src="./ships/vertical-horizontal.svg" alt="Vertical/Horizontal"/>
+            return <img src='./ships/vertical-horizontal.svg' alt='Vertical/Horizontal'/>
         case GRAPHICAL_TYPES.VERTICAL:
-            return <img src="./ships/vertical-horizontal.svg" alt="Vertical/Horizontal"/>
+            return <img src='./ships/vertical-horizontal.svg' alt='Vertical/Horizontal'/>
         case GRAPHICAL_TYPES.WATER:
-            return <img src="./ships/water.svg" alt="Water"/>
+            return <img src='./ships/water.svg' alt='Water'/>
         default:
-            return <img alt=""/>;
+            return <img alt=''/>;
         }
     }
 
     displayBoard () {
         return this.state.board.boardState.map((ship, index) => {
             return <div
-                className="Square nohighlight"
+                className='Square nohighlight'
                 key={index}
                 onMouseUp={(event) => this.handleClick(event, index)}
                 onContextMenu={(e) => e.preventDefault()}
@@ -88,24 +88,44 @@ export default class Board extends React.Component {
         return (rows ? this.props.rowCounts : this.props.columnCounts).map((count, index) => <p key={index}>{count}</p>);
     }
 
+    /**
+     * displays a visual representation of the number of runs left
+     * @returns {React.JSX.Element[]}
+     */
+    displayRuns () {
+        // consider turning onlyCountComplete to false in the future
+        const currentRuns = this.state.board.getRuns(true);
+        const runsDiff = this.props.runs.map((runCount, i) => runCount - currentRuns[i]);
+
+        // create all runs from this.props.runs
+        // all ships should be grayed out by default
+        // runsDiff[i] of them should be not grayed out
+        // if runsDiff[i] is negative, they should all be red
+    }
+
     render () {
         return (
             <>
-                <div className="Board">
-                    <span/>
-                    <div className='Column Counts' style={{ gridTemplate: `auto / repeat(${this.props.height}, 50px)`}}>
-                        {this.displayCounts(false) /* false = columns */}
+                <div className='Board'>
+                    <div className='Runs'>
+
                     </div>
-                    <div className='Row Counts' style={{ gridTemplate: `repeat(${this.props.width}, 50px) / auto`}}>
-                        {this.displayCounts(true) /* true = rows */}
+                    <div className='Inner'>
+                        <span/>
+                        <div className='Column Counts' style={{ gridTemplate: `auto / repeat(${this.props.height}, 50px)`}}>
+                            {this.displayCounts(false) /* false = columns */}
+                        </div>
+                        <div className='Row Counts' style={{ gridTemplate: `repeat(${this.props.width}, 50px) / auto`}}>
+                            {this.displayCounts(true) /* true = rows */}
+                        </div>
+                        <div className='Ships' style={{ gridTemplate: `repeat(${this.props.width}, 50px) / repeat(${this.props.height}, 50px)` }}>
+                            {this.displayBoard()}
+                        </div>
                     </div>
-                    <div className="Inner" style={{ gridTemplate: `repeat(${this.props.width}, 50px) / repeat(${this.props.height}, 50px)` }}>
-                        {this.displayBoard()}
-                    </div>
+                    <button onClick={() => { this.solveBoard(); }}>
+                        Solve
+                    </button>
                 </div>
-                <button onClick={() => { this.solveBoard(); }}>
-                    Solve
-                </button>
             </>
         );
     }

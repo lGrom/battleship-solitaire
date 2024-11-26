@@ -1,17 +1,22 @@
 .Board {
     display: grid;
+}
+
+.Runs {
+    grid-template-rows: auto auto;
+}
+
+.Inner {
+    display: grid;
     grid-template: 40px auto / 30px auto;
 }
 
 .Counts {
     display: grid;
+    justify-items: center;
 }
 
-.Counts p {
-    justify-self: center;
-}
-
-.Inner {
+.Ships {
     display: grid;
 }
 
