@@ -6,6 +6,15 @@
     grid-template-rows: auto auto;
 }
 
+.Run {
+    padding: 3px;
+}
+
+.Run img {
+    width: 25px;
+    padding: 1px;
+}
+
 .Inner {
     display: grid;
     grid-template: 40px auto / 30px auto;

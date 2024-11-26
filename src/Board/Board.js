@@ -90,17 +90,39 @@ export default class Board extends React.Component {
 
     /**
      * displays a visual representation of the number of runs left
-     * @returns {React.JSX.Element[]}
+     * @returns {React.JSX.Element[]} all runs
      */
     displayRuns () {
-        // consider turning onlyCountComplete to false in the future
-        const currentRuns = this.state.board.getRuns(true);
-        const runsDiff = this.props.runs.map((runCount, i) => runCount - currentRuns[i]);
-
         // create all runs from this.props.runs
         // all ships should be grayed out by default
         // runsDiff[i] of them should be not grayed out
         // if runsDiff[i] is negative, they should all be red
+        const out = [];
+
+        for (let i = 0; i < this.props.runs.length; i++) {
+            for (let j = 0; j < this.props.runs[i]; j++) {
+                out.push(<span className='Run'>{this.renderRun(i + 1)}</span>);
+            }
+        }
+
+        return out;
+    }
+
+    /**
+     * converts a length into a jsx 
+     * @param {number} length - the length of the run
+     * @returns {React.JSX[]} the run
+     */
+    renderRun (length) {
+        if (length === 1) return [this.typeToImg(GRAPHICAL_TYPES.SINGLE)];
+
+        const out = [this.typeToImg(GRAPHICAL_TYPES.RIGHT)];
+
+        for (let i = 0; i < length - 2; i++) {
+            out.push(this.typeToImg(GRAPHICAL_TYPES.HORIZONTAL));
+        }
+
+        return [...out, this.typeToImg(GRAPHICAL_TYPES.LEFT)]
     }
 
     render () {
@@ -108,7 +130,7 @@ export default class Board extends React.Component {
             <>
                 <div className='Board'>
                     <div className='Runs'>
-
+                        {this.displayRuns()}
                     </div>
                     <div className='Inner'>
                         <span/>
@@ -122,10 +144,10 @@ export default class Board extends React.Component {
                             {this.displayBoard()}
                         </div>
                     </div>
-                    <button onClick={() => { this.solveBoard(); }}>
-                        Solve
-                    </button>
                 </div>
+                <button onClick={() => { this.solveBoard(); }}>
+                    Solve
+                </button>
             </>
         );
     }
