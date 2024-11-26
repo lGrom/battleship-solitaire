@@ -41,7 +41,7 @@ export default class Board extends React.Component {
         this.state.board.computeGraphicalTypes();
     }
 
-    svgObjectFromType (type) {
+    typeToImg (type) {
         switch (type) {
         case GRAPHICAL_TYPES.SINGLE:
             return <img src="./ships/single.svg" alt="Single"/>
@@ -74,16 +74,34 @@ export default class Board extends React.Component {
                 onMouseUp={(event) => this.handleClick(event, index)}
                 onContextMenu={(e) => e.preventDefault()}
             >
-                {this.svgObjectFromType(ship.graphicalType)}
+                {this.typeToImg(ship.graphicalType)}
             </div>;
         });
+    }
+
+    /**
+     * displays counts for columns and rows
+     * @param {boolean} rows - true if it should return row counts instead of column counts
+     * @returns {React.JSX.Element[]} the counts
+     */
+    displayCounts (rows) {
+        return (rows ? this.props.rowCounts : this.props.columnCounts).map((count, index) => <p key={index}>{count}</p>);
     }
 
     render () {
         return (
             <>
-                <div className="Board" style={{ gridTemplate: `repeat(${this.props.width}, 50px) / repeat(${this.props.height}, 50px)` }}>
-                    {this.displayBoard()}
+                <div className="Board">
+                    <span/>
+                    <div className='Column Counts' style={{ gridTemplate: `auto / repeat(${this.props.height}, 50px)`}}>
+                        {this.displayCounts(false) /* false = columns */}
+                    </div>
+                    <div className='Row Counts' style={{ gridTemplate: `repeat(${this.props.width}, 50px) / auto`}}>
+                        {this.displayCounts(true) /* true = rows */}
+                    </div>
+                    <div className="Inner" style={{ gridTemplate: `repeat(${this.props.width}, 50px) / repeat(${this.props.height}, 50px)` }}>
+                        {this.displayBoard()}
+                    </div>
                 </div>
                 <button onClick={() => { this.solveBoard(); }}>
                     Solve

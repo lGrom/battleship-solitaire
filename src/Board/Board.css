@@ -1,5 +1,18 @@
 .Board {
     display: grid;
+    grid-template: 40px auto / 30px auto;
+}
+
+.Counts {
+    display: grid;
+}
+
+.Counts p {
+    justify-self: center;
+}
+
+.Inner {
+    display: grid;
 }
 
 .Square {
@@ -11,8 +24,4 @@
 
 .Square:hover {
     cursor: pointer;
-}
-
-.svg-path {
-    fill: white;
 }
