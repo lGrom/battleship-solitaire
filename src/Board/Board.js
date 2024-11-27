@@ -41,49 +41,113 @@ export default class Board extends React.Component {
         this.state.board.computeGraphicalTypes();
     }
 
-    svgObjectFromType (type) {
+    typeToImg (type) {
         switch (type) {
         case GRAPHICAL_TYPES.SINGLE:
-            return <object type="image/svg+xml" data="./ships/single.svg">Up</object>;
+            return <img src='./ships/single.svg' alt='Single'/>
         case GRAPHICAL_TYPES.UP:
-            return <object type="image/svg+xml" data="./ships/end.svg">Up</object>;
+            return <img src='./ships/end.svg' alt='Up' style={{ transform: 'rotate(90deg)' }}/>
         case GRAPHICAL_TYPES.RIGHT:
-            return <object type="image/svg+xml" data="./ships/end.svg">Right</object>;
+            return <img src='./ships/end.svg' alt='Right' style={{ transform: 'rotate(180deg)' }}/>
         case GRAPHICAL_TYPES.LEFT:
-            return <object type="image/svg+xml" data="./ships/end.svg">Left</object>;
+            return <img src='./ships/end.svg' alt='Left'/>
         case GRAPHICAL_TYPES.DOWN:
-            return <object type="image/svg+xml" data="./ships/end.svg">Down</object>;
+            return <img src='./ships/end.svg' alt='Down' style={{ transform: 'rotate(-90deg)' }}/>
         case GRAPHICAL_TYPES.SHIP:
-            return <object type="image/svg+xml" data="./ships/ship.svg">Ship</object>;
+            return <img src='./ships/ship.svg' alt='Ship'/>
         case GRAPHICAL_TYPES.HORIZONTAL:
-            return <object type="image/svg+xml" data="./ships/vertical-horizontal.svg">Vertical/Horizontal</object>;
+            return <img src='./ships/vertical-horizontal.svg' alt='Vertical/Horizontal'/>
         case GRAPHICAL_TYPES.VERTICAL:
-            return <object type="image/svg+xml" data="./ships/vertical-horizontal.svg">Vertical/Horizontal</object>;
+            return <img src='./ships/vertical-horizontal.svg' alt='Vertical/Horizontal'/>
         case GRAPHICAL_TYPES.WATER:
-            return <object type="image/svg+xml" data="./ships/water.svg">Water</object>;
+            return <img src='./ships/water.svg' alt='Water'/>
         default:
-            return <object/>;
+            return <img alt=''/>;
         }
     }
 
     displayBoard () {
         return this.state.board.boardState.map((ship, index) => {
             return <div
-                className="Square nohighlight"
+                className='Square nohighlight'
                 key={index}
                 onMouseUp={(event) => this.handleClick(event, index)}
                 onContextMenu={(e) => e.preventDefault()}
             >
-                {this.svgObjectFromType(ship.graphicalType)}
+                {this.typeToImg(ship.graphicalType)}
             </div>;
         });
+    }
+
+    /**
+     * displays counts for columns and rows
+     * @param {boolean} rows - true if it should return row counts instead of column counts
+     * @returns {React.JSX.Element[]} the counts
+     */
+    displayCounts (rows) {
+        return (rows ? this.props.rowCounts : this.props.columnCounts).map((count, index) => <p key={index}>{count}</p>);
+    }
+
+    /**
+     * displays a visual representation of the number of runs left
+     * @returns {React.JSX.Element[]} all runs
+     */
+    displayRuns () {
+        // create all runs from this.props.runs
+        // all ships should be grayed out by default
+        // runsDiff[i] of them should be not grayed out
+        // if runsDiff[i] is negative, they should all be red
+        const out = [];
+        const counts = this.state.board.countRunsLeft(true);
+
+        let key = 0;
+        for (let i = 0; i < this.props.runs.length; i++) {
+            for (let j = 0; j < this.props.runs[i]; j++) {
+                const classes = 'Run' + (counts[i] < 0 ? ' over' : '') + ((j < counts[i]) ? '' : ' desaturated');
+                out.push(<span className={classes} key={key}>{this.renderRun(i + 1)}</span>);
+                key++;
+            }
+        }
+
+        return out;
+    }
+
+    /**
+     * converts a length into a jsx 
+     * @param {number} length - the length of the run
+     * @returns {React.JSX[]} the run
+     */
+    renderRun (length) {
+        if (length === 1) return [this.typeToImg(GRAPHICAL_TYPES.SINGLE)];
+
+        const out = [this.typeToImg(GRAPHICAL_TYPES.RIGHT)];
+
+        for (let i = 0; i < length - 2; i++) {
+            out.push(this.typeToImg(GRAPHICAL_TYPES.HORIZONTAL));
+        }
+
+        return [...out, this.typeToImg(GRAPHICAL_TYPES.LEFT)]
     }
 
     render () {
         return (
             <>
-                <div className="Board" style={{ gridTemplate: `repeat(${this.props.width}, 50px) / repeat(${this.props.height}, 50px)` }}>
-                    {this.displayBoard()}
+                <div className='Board'>
+                    <div className='Runs'>
+                        {this.displayRuns()}
+                    </div>
+                    <div className='Inner'>
+                        <span/>
+                        <div className='Column Counts' style={{ gridTemplate: `auto / repeat(${this.props.height}, 50px)`}}>
+                            {this.displayCounts(false) /* false = columns */}
+                        </div>
+                        <div className='Row Counts' style={{ gridTemplate: `repeat(${this.props.width}, 50px) / auto`}}>
+                            {this.displayCounts(true) /* true = rows */}
+                        </div>
+                        <div className='Ships' style={{ gridTemplate: `repeat(${this.props.width}, 50px) / repeat(${this.props.height}, 50px)` }}>
+                            {this.displayBoard()}
+                        </div>
+                    </div>
                 </div>
                 <button onClick={() => { this.solveBoard(); }}>
                     Solve
