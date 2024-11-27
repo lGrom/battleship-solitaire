@@ -22,6 +22,9 @@ more specific things
 - [ ] make setPlayType not call setGraphical type and update test accordingly
 - [ ] make isPlayType use a spread argument instead of an array for ships to compare
 - [ ] rename graphicalTypeToRelativePosition to something shorter
+- [ ] soft flood row/column when the user clicks the number
+- [ ] allow for click + drag
+- [ ] consider removing play type
 - [X] make jsdoc more consistent (eg. dashes after param names, capitalization)
 - [X] name "uni/bi-directional" variables as "cardinal" and "orthognol" (or however it's spelled)
 - [X] store runs as 2 dimensional arrays where inner arrays = all indexes of squares in that run instead of just storing the start, end, and length of each run.

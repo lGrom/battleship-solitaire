@@ -2,6 +2,35 @@
     display: grid;
 }
 
+.Runs {
+    grid-template-rows: auto auto;
+}
+
+.Run {
+    padding: 3px;
+    display: inline-block;
+    height: auto;
+}
+
+.Run img {
+    width: 25px;
+    padding: 1px;
+}
+
+.Inner {
+    display: grid;
+    grid-template: 40px auto / 30px auto;
+}
+
+.Counts {
+    display: grid;
+    justify-items: center;
+}
+
+.Ships {
+    display: grid;
+}
+
 .Square {
     border: 1px solid gray;
     display: flex;
@@ -13,6 +42,26 @@
     cursor: pointer;
 }
 
-.svg-path {
-    fill: white;
+.desaturated img {
+    opacity: .5;
+}
+
+.over {
+    position: relative;
+    flex: inline-flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.over::after {
+    content: 'X';
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    font-size: 2rem;
+    font-weight: bold;
+    color: red;
+    pointer-events: none;
+    font-family: Impact, Haettenschweiler, 'Arial Narrow Bold', sans-serif;
 }

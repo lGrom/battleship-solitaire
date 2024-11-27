@@ -25,6 +25,7 @@ export default [
             'jsdoc/no-undefined-types': 'error',
             'jsdoc/require-description': 'error',
             'jsdoc/require-hyphen-before-param-description': 'error',
+            'jsdoc/require-jsdoc': 'off',
             'jsdoc/require-param': 'error',
             'jsdoc/require-param-description': 'error',
             'jsdoc/require-param-name': 'error',

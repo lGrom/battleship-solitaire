@@ -4,8 +4,7 @@
     -webkit-user-select: none;
 }
 
-object {
+img {
     pointer-events: none;
     width: 90%;
-    fill: red;
 }
