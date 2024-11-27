@@ -8,6 +8,8 @@
 
 .Run {
     padding: 3px;
+    display: inline-block;
+    height: auto;
 }
 
 .Run img {
@@ -38,4 +40,28 @@
 
 .Square:hover {
     cursor: pointer;
+}
+
+.desaturated img {
+    opacity: .5;
+}
+
+.over {
+    position: relative;
+    flex: inline-flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.over::after {
+    content: 'X';
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    font-size: 2rem;
+    font-weight: bold;
+    color: red;
+    pointer-events: none;
+    font-family: Impact, Haettenschweiler, 'Arial Narrow Bold', sans-serif;
 }

@@ -98,10 +98,14 @@ export default class Board extends React.Component {
         // runsDiff[i] of them should be not grayed out
         // if runsDiff[i] is negative, they should all be red
         const out = [];
+        const counts = this.state.board.countRunsLeft(true);
 
+        let key = 0;
         for (let i = 0; i < this.props.runs.length; i++) {
             for (let j = 0; j < this.props.runs[i]; j++) {
-                out.push(<span className='Run'>{this.renderRun(i + 1)}</span>);
+                const classes = 'Run' + (counts[i] < 0 ? ' over' : '') + ((j < counts[i]) ? '' : ' desaturated');
+                out.push(<span className={classes} key={key}>{this.renderRun(i + 1)}</span>);
+                key++;
             }
         }
 

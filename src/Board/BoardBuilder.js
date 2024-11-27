@@ -292,6 +292,8 @@ export default class BoardBuilder {
         // check if this could be replaced with a .map function -TODO
         // filter singleRuns for duplicates
         singleRuns.forEach((run) => {
+            if (onlyCountComplete && this.getShip(run[0]).graphicalType !== GRAPHICAL_TYPES.SINGLE) return;
+
             let duplicate = false;
 
             for (let i = 0; i < filteredSingleRuns.length && !duplicate; i++) {
@@ -426,7 +428,6 @@ export default class BoardBuilder {
 
             if (!isShip(ship)) continue;
 
-            // eslint-disable-next-line jsdoc/require-jsdoc
             function setType (type) {
                 ship.setGraphicalType(type);
             }
