@@ -1,7 +1,7 @@
 import React from 'react';
 import './Board.css';
 import BoardBuilder from './BoardBuilder';
-import { GRAPHICAL_TYPES } from './Ship';
+import { GRAPHICAL_TYPES, PLAY_TYPES } from './Ship';
 
 /**
  * The visible board
@@ -18,12 +18,15 @@ export default class Board extends React.Component {
         super(props);
 
         this.state = {
-            board: new BoardBuilder(this.props.width, this.props.height, this.props.preset, undefined, this.props.columnCounts, this.props.rowCounts, this.props.runs)
+            board: new BoardBuilder(this.props.width, this.props.height, this.props.preset, undefined, this.props.columnCounts, this.props.rowCounts, this.props.runs),
+            solved: false,
         };
     }
 
     solveBoard () {
-        this.setState({ board: BoardBuilder.solve(this.state.board) });
+        const newBoard = BoardBuilder.solve(this.state.board);
+        this.setState({ board: newBoard });
+        this.setState({ solved: newBoard.isSolved() });
     }
 
     handleClick (event, index) {
@@ -39,6 +42,7 @@ export default class Board extends React.Component {
         }
 
         this.state.board.computeGraphicalTypes();
+        this.setState({ solved: this.state.board.isSolved() });
     }
 
     typeToImg (type) {
@@ -74,7 +78,7 @@ export default class Board extends React.Component {
                 onMouseUp={(event) => this.handleClick(event, index)}
                 onContextMenu={(e) => e.preventDefault()}
             >
-                {this.typeToImg(ship.graphicalType)}
+                {this.typeToImg(this.state.solved && ship.playType === PLAY_TYPES.WATER ? PLAY_TYPES.UNKNOWN : ship.graphicalType )}
             </div>;
         });
     }
@@ -144,7 +148,7 @@ export default class Board extends React.Component {
                         <div className='Row Counts' style={{ gridTemplate: `repeat(${this.props.width}, 50px) / auto`}}>
                             {this.displayCounts(true) /* true = rows */}
                         </div>
-                        <div className='Ships' style={{ gridTemplate: `repeat(${this.props.width}, 50px) / repeat(${this.props.height}, 50px)` }}>
+                        <div className={'Ships' + (this.state.solved ? ' Solved' : '')} style={{ gridTemplate: `repeat(${this.props.width}, 50px) / repeat(${this.props.height}, 50px)` }}>
                             {this.displayBoard()}
                         </div>
                     </div>

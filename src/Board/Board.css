@@ -38,6 +38,14 @@
     align-items: center;
 }
 
+.Solved div {
+    background: hsl(145, 69%, 60%);
+}
+
+.Solved div img {
+    width: 100%;
+}
+
 .Square:hover {
     cursor: pointer;
 }

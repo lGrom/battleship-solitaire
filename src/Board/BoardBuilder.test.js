@@ -185,6 +185,39 @@ test('solve', () => {
     expect(BoardBuilder.solve(board2).sameBoardState(solution2)).toBeTruthy();
 })
 
+test('isSolved', () => {
+    const board = new BoardBuilder(4, 4, undefined, undefined, [3, 0, 0, 3], [2, 2, 1, 1], [1, 1, 1])
+        .softFloodColumn(1)
+        .softFloodColumn(2)
+        .softFloodRow(3)
+        .softFloodColumn(0, PLAY_TYPES.SHIP);
+
+    // test unknown
+    expect(board.isSolved()).toBeFalsy();
+    
+    // test rows
+    board.softFloodColumn(3, PLAY_TYPES.SHIP);
+    expect(board.isSolved()).toBeFalsy();
+    
+    // test columns
+    board.setShip([0, 2], PLAY_TYPES.WATER);
+    expect(board.isSolved()).toBeFalsy();
+    
+    // test multiple solutions
+    board.setShip([0, 3], PLAY_TYPES.SHIP);
+    expect(board.isSolved()).toBeTruthy();
+
+    board.setShip([3, 2], PLAY_TYPES.WATER);
+    board.setShip([3, 3], PLAY_TYPES.SHIP);
+    board.setShip([0, 2], PLAY_TYPES.SHIP);
+    board.setShip([0, 3], PLAY_TYPES.WATER);
+    expect(board.isSolved()).toBeTruthy();
+
+    // test runs (this board is impossible to solve by the way)
+    const board2 = new BoardBuilder(4, 4, board, undefined, [3, 0, 0, 3], [2, 2, 1, 1], [0, 1, 1]);
+    expect(board2.isSolved()).toBeFalsy();
+})
+
 // countCol
 // 	test throws RangeError
 // 	test returns correct counts
