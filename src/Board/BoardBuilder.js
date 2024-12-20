@@ -197,6 +197,33 @@ export default class BoardBuilder {
     }
 
     /**
+     * checks if the board is solved
+     * @returns {boolean} if the board is solved
+     */
+    isSolved () {
+        for (const square of this.boardState) {
+            if (square.playType === PLAY_TYPES.UNKNOWN) return false;
+        }
+
+        for (let x = 0; x < this.width; x++) {
+            const counts = this.countCol(x);
+            if (counts[0] !== this.columnCounts[x]) return false;
+        }
+
+        for (let y = 0; y < this.height; y++) {
+            const counts = this.countRow(y);
+            if (counts[0] !== this.rowCounts[y]) return false;
+        }
+
+        const runsLeft = this.countRunsLeft(false);
+        for (const count of runsLeft) {
+            if (count !== 0) return false;
+        }
+
+        return true;
+    }
+
+    /**
      * Count unknown and ship squares in a column
      * @param {number} x - The x position of the column
      * @returns {number[]} [#ships, #unknown]
