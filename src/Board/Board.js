@@ -29,6 +29,10 @@ export default class Board extends React.Component {
         this.setState({ solved: newBoard.isSolved() });
     }
 
+    reset () {
+        this.setState({ board: this.state.board.reset() });
+    }
+
     handleClick (event, index) {
         const ship = this.state.board.getShip(index);
 
@@ -90,7 +94,6 @@ export default class Board extends React.Component {
      */
     displayCounts (rows) {
         return (rows ? this.props.rowCounts : this.props.columnCounts).map((count, index) => <p key={index} onClick={() => {
-            console.log(rows, index);
             this.setState({ board: rows ? this.state.board.softFloodRow(index) : this.state.board.softFloodColumn(index) });
         }}>{count}</p>);
     }
@@ -158,6 +161,9 @@ export default class Board extends React.Component {
                 </div>
                 <button onClick={() => { this.solveBoard(); }}>
                     Solve
+                </button>
+                <button onClick={() => { this.reset(); }}>
+                    Reset
                 </button>
             </>
         );

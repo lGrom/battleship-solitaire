@@ -27,6 +27,20 @@ test('createBoardState', () => {
     expect(fromPreset.boardState[0].equals(new Ship(PLAY_TYPES.SHIP))).toBeTruthy();
 })
 
+test('reset', () => {
+    const preset = new BoardBuilder(4, 4)
+        .setShip([1, 3], GRAPHICAL_TYPES.RIGHT)
+        .setShip([0, 0], PLAY_TYPES.WATER);
+
+    const board = new BoardBuilder(4, 4, preset)
+        .setShip([3, 0], PLAY_TYPES.SHIP);
+
+    expect(board.sameBoardState(preset)).toBeFalsy();
+
+    board.reset();
+    expect(board.sameBoardState(preset)).toBeTruthy();
+})
+
 // copy
 // 	test originalBoard = copyBoard
 // 	test copyBoard !mutate originalBoard
