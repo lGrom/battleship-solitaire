@@ -17,13 +17,13 @@ import Ship, { GRAPHICAL_TYPES, PLAY_TYPES } from './Ship.js';
  */
 export default class BoardBuilder {
     constructor (width, height, preset, solution, columnCounts, rowCounts, runs) {
-        // if (preset) {
+        // if (this.preset) {
         //     if (solution) {
         //         // interpret everything else
         //     } else if (runs && columnCounts && rowCounts) {
         //         // interpret solution
         //         // note: this solution should not be used for checking if the puzzle is solved, as it may not be the only one
-        //         // instead, create an isSolved() function to check if the board's state meets all criteria
+        //         // instead, create an isSolved() function to check if the board's state meets all criteria --done
         //     }
 
         //     // check viability
@@ -31,14 +31,24 @@ export default class BoardBuilder {
 
         if (preset && (preset.width !== width || preset.height !== height)) throw new Error(`Preset should be the same size as the new board. Expected (${width}, ${height}), received (${preset.width}, ${preset.height})`);
 
-        this.width = width || preset?.width || 4;
-        this.height = height || preset?.height || 4;
+        this.width = width || this.preset?.width || 4;
+        this.height = height || this.preset?.height || 4;
 
+        this.preset = preset;
         this.columnCounts = columnCounts;
         this.rowCounts = rowCounts;
-        this.boardState = createBoardState(this.width, this.height, preset);
+        this.boardState = createBoardState(this.width, this.height, this.preset);
 
         this.runs = runs;
+    }
+
+    /**
+     * Resets the board
+     * @returns {BoardBuilder} this
+     */
+    reset () {
+        this.boardState = createBoardState(this.width, this.height, this.preset);
+        return this;
     }
 
     /**
