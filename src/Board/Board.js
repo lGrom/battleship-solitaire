@@ -29,6 +29,10 @@ export default class Board extends React.Component {
         this.setState({ solved: newBoard.isSolved() });
     }
 
+    reset () {
+        this.setState({ board: this.state.board.reset() });
+    }
+
     handleClick (event, index) {
         const ship = this.state.board.getShip(index);
 
@@ -157,6 +161,9 @@ export default class Board extends React.Component {
                 </div>
                 <button onClick={() => { this.solveBoard(); }}>
                     Solve
+                </button>
+                <button onClick={() => { this.reset(); }}>
+                    Reset
                 </button>
             </>
         );
