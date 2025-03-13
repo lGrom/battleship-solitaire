@@ -89,7 +89,10 @@ export default class Board extends React.Component {
      * @returns {React.JSX.Element[]} the counts
      */
     displayCounts (rows) {
-        return (rows ? this.props.rowCounts : this.props.columnCounts).map((count, index) => <p key={index}>{count}</p>);
+        return (rows ? this.props.rowCounts : this.props.columnCounts).map((count, index) => <p key={index} onClick={() => {
+            console.log(rows, index);
+            this.setState({ board: rows ? this.state.board.softFloodRow(index) : this.state.board.softFloodColumn(index) });
+        }}>{count}</p>);
     }
 
     /**

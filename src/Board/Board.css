@@ -27,6 +27,11 @@
     justify-items: center;
 }
 
+.Counts p:hover {
+    cursor: pointer;
+    text-decoration: underline;
+}
+
 .Ships {
     display: grid;
 }
