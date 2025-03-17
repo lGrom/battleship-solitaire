@@ -20,6 +20,7 @@ export default class Board extends React.Component {
         this.state = {
             board: new BoardBuilder(this.props.width, this.props.height, this.props.preset, undefined, this.props.columnCounts, this.props.rowCounts, this.props.runs),
             solved: false,
+            draggedType: undefined
         };
     }
 
@@ -33,20 +34,28 @@ export default class Board extends React.Component {
         this.setState({ board: this.state.board.reset() });
     }
 
-    handleClick (event, index) {
+    onMouseDown (event, index) {
         const ship = this.state.board.getShip(index);
 
         if (ship.pinned) return;
+        if (event.button !== 0 && event.button !== 2) return;
 
-        if (event.button === 0 || event.button === 2) {
-            // this makes it +1 for left click and +2 for right click (which basically works as -1, but without making it negative)
-            const newType = (ship.playType + 1 + event.button / 2) % 3;
-            ship.setPlayType(newType);
-            this.setState({ board: this.state.board.setShip(index, ship) });
-        }
+        // this makes it +1 for left click and +2 for right click (which basically works as -1, but without making it negative)
+        const newType = (ship.playType + 1 + event.button / 2) % 3;
+        const board = this.state.board.setShip(index, newType).computeGraphicalTypes();
 
-        this.state.board.computeGraphicalTypes();
-        this.setState({ solved: this.state.board.isSolved() });
+        this.setState({ board: board, solved: board.isSolved(), draggedType: newType });
+    }
+
+    onMouseEnter (index) {
+        if (this.state.board.getShip(index).pinned || !this.state.draggedType) return;
+
+        const board = this.state.board.setShip(index, this.state.draggedType).computeGraphicalTypes();
+        this.setState({ board: board, solved: board.isSolved() });
+    }
+
+    onMouseUp () {
+        this.setState({ draggedType: undefined });
     }
 
     typeToImg (type) {
@@ -79,7 +88,9 @@ export default class Board extends React.Component {
             return <div
                 className='Square nohighlight'
                 key={index}
-                onMouseUp={(event) => this.handleClick(event, index)}
+                onMouseDown={(event) => this.onMouseDown(event, index)}
+                onMouseEnter={() => this.onMouseEnter(index)}
+                onMouseUp={() => this.onMouseUp()}
                 onContextMenu={(e) => e.preventDefault()}
             >
                 {this.typeToImg(this.state.solved && ship.playType === PLAY_TYPES.WATER ? PLAY_TYPES.UNKNOWN : ship.graphicalType )}
