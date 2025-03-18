@@ -174,7 +174,7 @@ export const PLAY_TYPES = {
     // playable/basics
     UNKNOWN: 0,
     WATER: 1,
-    SHIP: 2
+    SHIP: 2,
 };
 
 /**
@@ -194,5 +194,5 @@ export const GRAPHICAL_TYPES = {
     LEFT: 7,
 
     VERTICAL: 8,
-    HORIZONTAL: 9
+    HORIZONTAL: 9,
 };
