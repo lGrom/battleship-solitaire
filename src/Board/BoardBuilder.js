@@ -502,7 +502,7 @@ export default class BoardBuilder {
      */
     coordinatesToIndex (coordinates) {
         const [x, y] = coordinates;
-        
+
         if (!Number.isInteger(x) || !Number.isInteger(y)) {
             throw new TypeError(`coordinates must be integers (are ${typeof x} and ${typeof y})`);
         }
@@ -751,7 +751,7 @@ export const RELATIVE_POSITIONS = {
     RIGHT: 5,
     BOTTOM_LEFT: 6,
     BOTTOM: 7,
-    BOTTOM_RIGHT: 8
+    BOTTOM_RIGHT: 8,
 };
 
 /**

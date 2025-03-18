@@ -20,7 +20,7 @@ more specific things
 - [X] make the styling automatically adjust for the width and height of the board
 - [X] make position arrays start at 0 instead of 1
 - [ ] ~~make setPlayType not call setGraphical type and update test accordingly~~
-- [ ] make isPlayType use a spread argument instead of an array for ships to compare
+- [ ] ~~make isPlayType use a spread argument instead of an array for ships to compare~~
 - [ ] rename graphicalTypeToRelativePosition to something shorter
 - [X] soft flood row/column when the user clicks the number
 - [ ] allow for click + drag

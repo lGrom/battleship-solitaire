@@ -20,6 +20,7 @@ export default class Board extends React.Component {
         this.state = {
             board: new BoardBuilder(this.props.width, this.props.height, this.props.preset, undefined, this.props.columnCounts, this.props.rowCounts, this.props.runs),
             solved: false,
+            draggedType: undefined,
         };
     }
 
@@ -33,42 +34,50 @@ export default class Board extends React.Component {
         this.setState({ board: this.state.board.reset() });
     }
 
-    handleClick (event, index) {
+    onMouseDown (event, index) {
         const ship = this.state.board.getShip(index);
 
         if (ship.pinned) return;
+        if (event.button !== 0 && event.button !== 2) return;
 
-        if (event.button === 0 || event.button === 2) {
-            // this makes it +1 for left click and +2 for right click (which basically works as -1, but without making it negative)
-            const newType = (ship.playType + 1 + event.button / 2) % 3;
-            ship.setPlayType(newType);
-            this.setState({ board: this.state.board.setShip(index, ship) });
-        }
+        // this makes it +1 for left click and +2 for right click (which basically works as -1, but without making it negative)
+        const newType = (ship.playType + 1 + event.button / 2) % 3;
+        const board = this.state.board.setShip(index, newType).computeGraphicalTypes();
 
-        this.state.board.computeGraphicalTypes();
-        this.setState({ solved: this.state.board.isSolved() });
+        this.setState({ board: board, solved: board.isSolved(), draggedType: newType });
+    }
+
+    onMouseEnter (index) {
+        if (this.state.board.getShip(index).pinned || !this.state.draggedType) return;
+
+        const board = this.state.board.setShip(index, this.state.draggedType).computeGraphicalTypes();
+        this.setState({ board: board, solved: board.isSolved() });
+    }
+
+    onMouseUp () {
+        this.setState({ draggedType: undefined });
     }
 
     typeToImg (type) {
         switch (type) {
         case GRAPHICAL_TYPES.SINGLE:
-            return <img src='./ships/single.svg' alt='Single'/>
+            return <img src='./ships/single.svg' alt='Single'/>;
         case GRAPHICAL_TYPES.UP:
-            return <img src='./ships/end.svg' alt='Up' style={{ transform: 'rotate(90deg)' }}/>
+            return <img src='./ships/end.svg' alt='Up' style={{ transform: 'rotate(90deg)' }}/>;
         case GRAPHICAL_TYPES.RIGHT:
-            return <img src='./ships/end.svg' alt='Right' style={{ transform: 'rotate(180deg)' }}/>
+            return <img src='./ships/end.svg' alt='Right' style={{ transform: 'rotate(180deg)' }}/>;
         case GRAPHICAL_TYPES.LEFT:
-            return <img src='./ships/end.svg' alt='Left'/>
+            return <img src='./ships/end.svg' alt='Left'/>;
         case GRAPHICAL_TYPES.DOWN:
-            return <img src='./ships/end.svg' alt='Down' style={{ transform: 'rotate(-90deg)' }}/>
+            return <img src='./ships/end.svg' alt='Down' style={{ transform: 'rotate(-90deg)' }}/>;
         case GRAPHICAL_TYPES.SHIP:
-            return <img src='./ships/ship.svg' alt='Ship'/>
+            return <img src='./ships/ship.svg' alt='Ship'/>;
         case GRAPHICAL_TYPES.HORIZONTAL:
-            return <img src='./ships/vertical-horizontal.svg' alt='Vertical/Horizontal'/>
+            return <img src='./ships/vertical-horizontal.svg' alt='Vertical/Horizontal'/>;
         case GRAPHICAL_TYPES.VERTICAL:
-            return <img src='./ships/vertical-horizontal.svg' alt='Vertical/Horizontal'/>
+            return <img src='./ships/vertical-horizontal.svg' alt='Vertical/Horizontal'/>;
         case GRAPHICAL_TYPES.WATER:
-            return <img src='./ships/water.svg' alt='Water'/>
+            return <img src='./ships/water.svg' alt='Water'/>;
         default:
             return <img alt=''/>;
         }
@@ -79,7 +88,9 @@ export default class Board extends React.Component {
             return <div
                 className='Square nohighlight'
                 key={index}
-                onMouseUp={(event) => this.handleClick(event, index)}
+                onMouseDown={(event) => this.onMouseDown(event, index)}
+                onMouseEnter={() => this.onMouseEnter(index)}
+                onMouseUp={() => this.onMouseUp()}
                 onContextMenu={(e) => e.preventDefault()}
             >
                 {this.typeToImg(this.state.solved && ship.playType === PLAY_TYPES.WATER ? PLAY_TYPES.UNKNOWN : ship.graphicalType )}
@@ -123,7 +134,7 @@ export default class Board extends React.Component {
     }
 
     /**
-     * converts a length into a jsx 
+     * converts a length into a jsx
      * @param {number} length - the length of the run
      * @returns {React.JSX[]} the run
      */
@@ -136,7 +147,7 @@ export default class Board extends React.Component {
             out.push(this.typeToImg(GRAPHICAL_TYPES.HORIZONTAL));
         }
 
-        return [...out, this.typeToImg(GRAPHICAL_TYPES.LEFT)]
+        return [...out, this.typeToImg(GRAPHICAL_TYPES.LEFT)];
     }
 
     render () {
@@ -148,10 +159,10 @@ export default class Board extends React.Component {
                     </div>
                     <div className='Inner'>
                         <span/>
-                        <div className='Column Counts' style={{ gridTemplate: `auto / repeat(${this.props.height}, 50px)`}}>
+                        <div className='Column Counts' style={{ gridTemplate: `auto / repeat(${this.props.height}, 50px)` }}>
                             {this.displayCounts(false) /* false = columns */}
                         </div>
-                        <div className='Row Counts' style={{ gridTemplate: `repeat(${this.props.width}, 50px) / auto`}}>
+                        <div className='Row Counts' style={{ gridTemplate: `repeat(${this.props.width}, 50px) / auto` }}>
                             {this.displayCounts(true) /* true = rows */}
                         </div>
                         <div className={'Ships' + (this.state.solved ? ' Solved' : '')} style={{ gridTemplate: `repeat(${this.props.width}, 50px) / repeat(${this.props.height}, 50px)` }}>
