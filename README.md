@@ -28,3 +28,26 @@ more specific things
 - [X] make jsdoc more consistent (eg. dashes after param names, capitalization)
 - [X] name "uni/bi-directional" variables as "cardinal" and "orthognol" (or however it's spelled)
 - [X] store runs as 2 dimensional arrays where inner arrays = all indexes of squares in that run instead of just storing the start, end, and length of each run.
+
+end goal:
+- hard mode
+  - history + checkpoints
+- game sharing
+  - convert state from and to base64 representation
+- auto-generation
+- auto-solving
+  - hard mode/speculative solving
+- board editor
+
+development timeline:
+- board editor
+- game sharing
+- auto-generation (easy mode)
+- hard mode
+- auto-solving (hard mode)
+- auto-generation (hard mode)
+- COMPLETE STYLING OVERHAUL + NEXT.JS
+
+board editor:
+- function to export/import board state from base64
+- seperate react component (based on board)
