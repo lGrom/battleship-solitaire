@@ -42,6 +42,59 @@ export default class BoardBuilder {
         this.runs = runs;
     }
 
+    export () {
+        /*
+            This can certainly be improved to waste less space, but until that's necessary I won't attempt it.
+            Supports up to a 256x256 board.
+            Specification:
+
+            width, 1B
+            height, 1B
+            column counts, ceil(log base 2 width)b * width
+            row counts, ceil(log base 2 height)b * height
+
+            runs:
+                x = max(ceil(log base 2 width), ceil(log base 2 height))
+	            header, xb (number of entries)
+	            size, xb: count, 1B
+
+            boardstate (5b * width * height:
+	            ship: 5b
+		            pinned: 1b
+		            type: 4b
+        */
+
+        let out = '';
+
+        out += (this.width - 1).toString(2).padStart(8, '0');
+        out += (this.height - 1).toString(2).padStart(8, '0');
+
+        for (let i = 0; i < this.width; i++ ) {
+            out += this?.columnCounts[i].toString(2).padStart(Math.ceil(Math.log2(this.width)), '0');
+        }
+
+        for (let i = 0; i < this.height; i++ ) {
+            out += this?.rowCounts[i].toString(2).padStart(Math.ceil(Math.log2(this.height)), '0');
+        }
+
+        let runs = '';
+        const runBuffer = Math.max(Math.ceil(Math.log2(this.width)), Math.ceil(Math.log2(this.height)));
+        this?.runs.forEach((count, size) => {
+            runs += count.toString(2).padStart(runBuffer, '0');
+            runs += size.toString(2).padStart(runBuffer, '0');
+        });
+
+        out += runs.length.toString(2).padStart(8, '0');
+        out += runs;
+
+        for (let i = 0; i < this.width * this.height; i++) {
+            out += this.boardState[i].pinned ? '1' : '0';
+            out += this.boardState[i].graphicalType.toString(2).padStart(4, '0');
+        }
+
+        return out;
+    }
+
     /**
      * Resets the board
      * @returns {BoardBuilder} this
