@@ -9,7 +9,7 @@ import Ship, { GRAPHICAL_TYPES, PLAY_TYPES } from './Ship.js';
  * The underlying Board class. For use as a preset, supply width and height. For use as a puzzle, supply preset and either solution or verticalCount, horizontalCount, and runs.
  * @param {number} [width] - Width in squares (default 4)
  * @param {number} [height] - Height in squares (default 4)
- * @param {BoardBuilder} [preset] - Pre-existing ships
+ * @param {BoardBuilder|string} [preset] - Pre-existing ships
  * @param {BoardBuilder} [solution] - Ending board (leave undefined if using vert/hoz count and runs)
  * @param {number[]} [columnCounts] - Number of ships in each column (left to right)
  * @param {number[]} [rowCounts] - Number of ships in each row (top to bottom)
@@ -87,12 +87,50 @@ export default class BoardBuilder {
         out += runs.length.toString(2).padStart(8, '0');
         out += runs;
 
+        let currentUnknowns = 0;
+        let currentWaters = 0;
         for (let i = 0; i < this.width * this.height; i++) {
-            out += this.boardState[i].pinned ? '1' : '0';
-            out += this.boardState[i].graphicalType.toString(2).padStart(4, '0');
+            if (this.boardState[i].graphicalType === GRAPHICAL_TYPES.UNKNOWN) {
+                currentUnknowns++;
+                continue;
+            } else if (this.boardState[i].graphicalType === GRAPHICAL_TYPES.WATER) {
+                currentWaters++;
+                continue;
+            }
+
+            const maxLength = Math.ceil(Math.log2(this.width * this.height));
+            if (currentUnknowns === 0 && currentWaters === 0) {
+                out += this.boardState[i].pinned ? '1' : '0';
+                out += this.boardState[i].graphicalType.toString(2).padStart(4, '0');
+            } else if (currentUnknowns * 5 > 5 + maxLength) {
+                out += '11111';
+                out += (currentUnknowns - 1).toString(2).padStart(maxLength, '0');
+            } else if (currentUnknowns > 0) {
+                for (let j = 0; j < currentUnknowns; j++ ) {
+                    out += '00000';
+                }
+            } else if (currentWaters * 5 > 5 + maxLength) {
+                out += '11110';
+                out += (currentWaters - 1).toString(2).padStart(maxLength, '0');
+            } else {
+                for (let j = 0; j < currentWaters; j++ ) {
+                    out += '00001';
+                }
+            }
+
+            currentUnknowns = 0;
+            currentWaters = 0;
         }
 
-        return out;
+        const paddedString = out.length % 8 === 0 ? out : out + '0'.repeat(8 - (out.length % 8));
+
+        const byteArray = [];
+        for (let i = 0; i < out.length; i += 8) {
+            byteArray.push(parseInt(paddedString.slice(i, i + 8), 2));
+        }
+
+        // eslint-disable-next-line no-undef
+        return btoa(String.fromCharCode(...byteArray));
     }
 
     /**
