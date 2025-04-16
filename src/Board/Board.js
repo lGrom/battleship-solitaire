@@ -8,7 +8,6 @@ import { GRAPHICAL_TYPES, PLAY_TYPES } from './Ship';
  * @param {number} width - Width in squares
  * @param {number} height - Height in squares
  * @param {BoardBuilder} [preset] - Pre-existing ships
- * @param {BoardBuilder} [solution] - Ending board (leave undefined if using vert/hoz count and shipsLeft)
  * @param {number[]} [columnCounts] - Number of ships in each column (left to right)
  * @param {number[]} [rowCounts] - Number of ships in each row (top to bottom)
  * @param {number[]} [shipsLeft] - Number of each type of ship left (eg. 3 solos and 1 double = [3, 1])
@@ -18,7 +17,7 @@ export default class Board extends React.Component {
         super(props);
 
         this.state = {
-            board: new BoardBuilder(this.props.width, this.props.height, this.props.preset, undefined, this.props.columnCounts, this.props.rowCounts, this.props.runs),
+            board: new BoardBuilder(this.props.width, this.props.height, this.props.preset, this.props.columnCounts, this.props.rowCounts, this.props.runs),
             solved: false,
             draggedType: undefined,
         };
@@ -176,7 +175,11 @@ export default class Board extends React.Component {
                 <button onClick={() => { this.reset(); }}>
                     Reset
                 </button>
-                <button onClick={() => { console.log(this.state.board.export()); }}>
+                <button onClick={() => {
+
+                    // eslint-disable-next-line no-undef, no-console
+                    console.log(this.state.board.export());
+                }}>
                     Export
                 </button>
             </>
