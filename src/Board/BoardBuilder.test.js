@@ -658,9 +658,7 @@ test('base64 export/import', () => {
     const board = new BoardBuilder(2, 2, undefined, [2, 0], [1, 1], [0, 1])
         .setShip(0, GRAPHICAL_TYPES.DOWN)
         .setShip(2, GRAPHICAL_TYPES.UP);
-
     const b64 = board.export();
-
     const importedBoard = new BoardBuilder(b64);
 
     expect(importedBoard.sameBoardState(board)).toBeTruthy();
@@ -671,7 +669,6 @@ test('base64 export/import', () => {
     const board2 = new BoardBuilder(2, 2)
         .setShip(0, GRAPHICAL_TYPES.DOWN)
         .setShip(2, GRAPHICAL_TYPES.UP);
-
     const board2B64 = board2.export();
     const importedBoard2 = new BoardBuilder(board2B64);
 
@@ -679,4 +676,11 @@ test('base64 export/import', () => {
     expect(importedBoard2.columnCounts).toEqual([0, 0]);
     expect(importedBoard2.rowCounts).toEqual([0, 0]);
     expect(importedBoard2.runs).toEqual([0]);
+
+    const board3 = new BoardBuilder(16, 16)
+        .setShip([2, 0], GRAPHICAL_TYPES.SINGLE, true);
+    const board3B64 = board3.export();
+    const importedBoard3 = new BoardBuilder(board3B64);
+
+    expect(importedBoard3.sameBoardState(board3)).toBeTruthy();
 });

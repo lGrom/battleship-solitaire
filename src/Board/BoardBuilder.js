@@ -212,6 +212,8 @@ export default class BoardBuilder {
                     state.push(new Ship(type === 0b1111 ? GRAPHICAL_TYPES.UNKNOWN : GRAPHICAL_TYPES.WATER));
                     i++;
                 }
+            } else {
+                state.push(new Ship(type, pinned));
             }
         }
 
