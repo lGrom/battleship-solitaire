@@ -51,3 +51,25 @@ development timeline:
 board editor:
 - function to export/import board state from base64
 - seperate react component (based on board)
+
+
+### Specification for Base64 Exports
+Supports up to a 256x256 board.
+Specification:
+
+width, 1B
+height, 1B
+column counts, ceil(log base 2 width)b * width
+row counts, ceil(log base 2 height)b * height
+
+runs:
+  x = max(ceil(log base 2 width), ceil(log base 2 height))
+  header, xb (number of entries)
+  size, xb: count, 1B
+
+boardstate:
+  ship: 5b
+    pinned: 1b
+    type: 4b
+  if pinned && type === 1111 or 1110
+    repeat unknown (1111) or water (1110) for parseInt(ceil(log base 2 width*height))

@@ -1,3 +1,5 @@
+/* global btoa atob */
+
 /**
  * @typedef {number[]} Run
  * An array of indicies representing sqaures in a run
@@ -6,40 +8,213 @@
 import Ship, { GRAPHICAL_TYPES, PLAY_TYPES } from './Ship.js';
 
 /**
- * The underlying Board class. For use as a preset, supply width and height. For use as a puzzle, supply preset and either solution or verticalCount, horizontalCount, and runs.
- * @param {number} [width] - Width in squares (default 4)
- * @param {number} [height] - Height in squares (default 4)
- * @param {BoardBuilder} [preset] - Pre-existing ships
- * @param {BoardBuilder} [solution] - Ending board (leave undefined if using vert/hoz count and runs)
- * @param {number[]} [columnCounts] - Number of ships in each column (left to right)
+ * The underlying Board class. For use as a preset, supply width and height. For use as a puzzle, also supply preset, counts, and runs.
+ * @param {number|BoardBuilder|string} [widthOrPreset] - Width in squares (default 4) or the preset
+ * @param {number|number[]} [heightOrColumnCounts] - Height in squares (default 4) or column counts
+ * @param {BoardBuilder|string|number[]} [presetOrRowCounts] - Pre-existing ships or row counts
+ * @param {number[]} [columnCountsOrRunCounts] - Number of ships in each column (left to right) or runs
  * @param {number[]} [rowCounts] - Number of ships in each row (top to bottom)
  * @param {number[]} [runs] - Number of each type of run (eg. 3 solos and 1 double = [3, 1])
  */
 export default class BoardBuilder {
-    constructor (width, height, preset, solution, columnCounts, rowCounts, runs) {
-        // if (this.preset) {
-        //     if (solution) {
-        //         // interpret everything else
-        //     } else if (runs && columnCounts && rowCounts) {
-        //         // interpret solution
-        //         // note: this solution should not be used for checking if the puzzle is solved, as it may not be the only one
-        //         // instead, create an isSolved() function to check if the board's state meets all criteria --done
-        //     }
+    constructor (widthOrPreset, heightOrColumnCounts, presetOrRowCounts, columnCountsOrRunCounts, rowCounts, runs) {
+        if (widthOrPreset instanceof BoardBuilder) {
+            const preset = widthOrPreset;
 
-        //     // check viability
-        // } -TODO
+            this.width = widthOrPreset.width;
+            this.height = widthOrPreset.height;
+            this.preset = preset;
+            this.columnCounts = heightOrColumnCounts;
+            this.rowCounts = presetOrRowCounts;
+            this.runs = columnCountsOrRunCounts;
+            this.boardState = createBoardState(this.width, this.height, preset);
+        } else if (typeof widthOrPreset === 'string') {
+            const board = BoardBuilder.b64ToBoard(widthOrPreset);
 
-        if (preset && (preset.width !== width || preset.height !== height)) throw new Error(`Preset should be the same size as the new board. Expected (${width}, ${height}), received (${preset.width}, ${preset.height})`);
+            this.width = board.width;
+            this.height = board.height;
+            this.preset = board.preset;
+            this.columnCounts = board.columnCounts;
+            this.rowCounts = board.rowCounts;
+            this.runs = board.runs;
+            this.boardState = board.boardState;
+        } else {
+            const width = widthOrPreset;
+            if (presetOrRowCounts && (presetOrRowCounts.width !== width || presetOrRowCounts.height !== heightOrColumnCounts)) throw new Error(`Preset should be the same size as the new board. Expected (${width}, ${heightOrColumnCounts}), received (${presetOrRowCounts.width}, ${presetOrRowCounts.height})`);
 
-        this.width = width || this.preset?.width || 4;
-        this.height = height || this.preset?.height || 4;
+            this.width = width || this.preset?.width || 4;
+            this.height = heightOrColumnCounts || this.preset?.height || 4;
 
-        this.preset = preset;
-        this.columnCounts = columnCounts;
-        this.rowCounts = rowCounts;
-        this.boardState = createBoardState(this.width, this.height, this.preset);
+            this.preset = presetOrRowCounts;
+            this.columnCounts = columnCountsOrRunCounts;
+            this.rowCounts = rowCounts;
+            this.boardState = createBoardState(this.width, this.height, this.preset);
 
-        this.runs = runs;
+            this.runs = runs;
+        }
+    }
+
+    /**
+     * Converts the board to its base64 representation
+     * If the board has no counts or runs, they will be exported as 0
+     * @returns {string} The base64 version of the board
+     */
+    export () {
+        let out = '';
+
+        out += (this.width - 1).toString(2).padStart(8, '0');
+        out += (this.height - 1).toString(2).padStart(8, '0');
+
+        const colCounts = this.columnCounts ? this.columnCounts : Array(this.width).fill(0);
+        for (let i = 0; i < this.width; i++ ) {
+            out += colCounts[i].toString(2).padStart(Math.ceil(Math.log2(this.width)) + 1, '0');
+        }
+
+        const rowCounts = this.rowCounts ? this.rowCounts : Array(this.height).fill(0);
+        for (let i = 0; i < this.height; i++ ) {
+            out += rowCounts[i].toString(2).padStart(Math.ceil(Math.log2(this.height)) + 1, '0');
+        }
+
+        let runsBytes = '';
+        const runs = this.runs ? this.runs : [0];
+        const runBuffer = Math.max(Math.ceil(Math.log2(this.width)), Math.ceil(Math.log2(this.height)) + 1);
+        runs.forEach((count, size) => {
+            runsBytes += size.toString(2).padStart(runBuffer, '0');
+            runsBytes += count.toString(2).padStart(runBuffer, '0');
+        });
+
+        out += runs.length.toString(2).padStart(8, '0');
+        out += runsBytes;
+
+        let currentUnknowns = 0;
+        let currentWaters = 0;
+
+        const maxLength = Math.ceil(Math.log2(this.width * this.height + 1));
+        function addMultipleShips () {
+            if (currentUnknowns * 5 > 5 + maxLength) {
+                out += '11111';
+                out += (currentUnknowns - 1).toString(2).padStart(maxLength, '0');
+            } else if (currentUnknowns > 0) {
+                for (let j = 0; j < currentUnknowns; j++ ) {
+                    out += '00000';
+                }
+            } else if (currentWaters * 5 > 5 + maxLength) {
+                out += '11110';
+                out += (currentWaters - 1).toString(2).padStart(maxLength, '0');
+            } else {
+                for (let j = 0; j < currentWaters; j++ ) {
+                    out += '00001';
+                }
+            }
+        }
+
+        for (let i = 0; i < this.width * this.height; i++) {
+            if (currentUnknowns !== 0 || currentWaters !== 0) {
+                addMultipleShips();
+                currentUnknowns = 0;
+                currentWaters = 0;
+            }
+
+            if (this.boardState[i].graphicalType === GRAPHICAL_TYPES.UNKNOWN) {
+                currentUnknowns++;
+                continue;
+            } else if (this.boardState[i].graphicalType === GRAPHICAL_TYPES.WATER) {
+                currentWaters++;
+                continue;
+            }
+
+            out += this.boardState[i].pinned ? '1' : '0';
+            out += this.boardState[i].graphicalType.toString(2).padStart(4, '0');
+        }
+
+        addMultipleShips();
+
+        const paddedString = out.length % 8 === 0 ? out : out + '0'.repeat(8 - (out.length % 8));
+
+        const byteArray = [];
+        for (let i = 0; i < out.length; i += 8) {
+            byteArray.push(parseInt(paddedString.slice(i, i + 8), 2));
+        }
+
+        return btoa(String.fromCharCode(...byteArray));
+    }
+
+    /**
+     * Converts a base64 board to its BoardBuilder object counterpart
+     * @param {string} base64 - The base64 board to convert
+     * @returns {BoardBuilder} The board as a BoardBuilder object
+     */
+    static b64ToBoard (base64) {
+        const string = atob(base64);
+
+        let binaryString = '';
+        for (let i = 0; i < string.length; i++) {
+            binaryString += string.charCodeAt(i).toString(2).padStart(8, '0');
+        }
+
+        function trim (length) {
+            binaryString = binaryString.slice(length);
+        }
+
+        const width = parseInt(binaryString.slice(0, 8), 2) + 1;
+        const height = parseInt(binaryString.slice(8, 16), 2) + 1;
+
+        trim(16);
+
+        const colCounts = [];
+        for (let i = 0; i < width; i++) {
+            colCounts.push(parseInt(binaryString.slice(0, Math.ceil(Math.log2(width)) + 1), 2));
+            trim(Math.ceil(Math.log2(width)) + 1);
+        }
+
+        const rowCounts = [];
+        for (let i = 0; i < height; i++) {
+            rowCounts.push(parseInt(binaryString.slice(0, Math.ceil(Math.log2(height)) + 1), 2));
+            trim(Math.ceil(Math.log2(height)) + 1);
+        }
+
+        const runBits = Math.max(Math.ceil(Math.log2(width)), Math.ceil(Math.log2(height)) + 1);
+        const runEntries = parseInt(binaryString.slice(0, 8), 2);
+        trim(8);
+
+        const runs = [];
+        for (let i = 0; i < runEntries; i++) {
+            const size = parseInt(binaryString.slice(0, runBits), 2);
+            trim(runBits);
+            const count = parseInt(binaryString.slice(0, runBits), 2);
+            trim(runBits);
+
+            runs[size] = count;
+        }
+
+        const state = [];
+        let i = 0;
+        while (i < width * height && binaryString.length >= 5) {
+            const bits = binaryString.slice(0, 5);
+            const pinned = binaryString.slice(0, 1) === '1';
+            const type = parseInt(binaryString.slice(1, 5), 2);
+            trim(5);
+
+            const maxLength = Math.ceil(Math.log2(width * height + 1));
+
+            if (bits === '11111' || bits === '11110') {
+                const repeats = parseInt(binaryString.slice(0, maxLength), 2) + 1;
+                trim(maxLength);
+
+
+                for (let j = 0; j < repeats; j++ ) {
+                    state.push(new Ship(bits === '11111' ? GRAPHICAL_TYPES.UNKNOWN : GRAPHICAL_TYPES.WATER));
+                    i++;
+                }
+            } else {
+                state.push(new Ship(type, pinned));
+            }
+        }
+
+        const board = new BoardBuilder(width, height, undefined, colCounts, rowCounts, runs);
+        board.boardState = state;
+
+        return board;
     }
 
     /**
@@ -56,7 +231,7 @@ export default class BoardBuilder {
      * @returns {BoardBuilder} A copy of the board
      */
     copy () {
-        return new BoardBuilder(this.width, this.height, this, this.solution, this.columnCounts, this.rowCounts, this.runs);
+        return new BoardBuilder(this.width, this.height, this, this.columnCounts, this.rowCounts, this.runs);
     }
 
     /**

@@ -8,7 +8,6 @@ import { GRAPHICAL_TYPES, PLAY_TYPES } from './Ship';
  * @param {number} width - Width in squares
  * @param {number} height - Height in squares
  * @param {BoardBuilder} [preset] - Pre-existing ships
- * @param {BoardBuilder} [solution] - Ending board (leave undefined if using vert/hoz count and shipsLeft)
  * @param {number[]} [columnCounts] - Number of ships in each column (left to right)
  * @param {number[]} [rowCounts] - Number of ships in each row (top to bottom)
  * @param {number[]} [shipsLeft] - Number of each type of ship left (eg. 3 solos and 1 double = [3, 1])
@@ -18,7 +17,7 @@ export default class Board extends React.Component {
         super(props);
 
         this.state = {
-            board: new BoardBuilder(this.props.width, this.props.height, this.props.preset, undefined, this.props.columnCounts, this.props.rowCounts, this.props.runs),
+            board: new BoardBuilder(this.props.width, this.props.height, this.props.preset, this.props.columnCounts, this.props.rowCounts, this.props.runs),
             solved: false,
             draggedType: undefined,
         };
@@ -104,7 +103,7 @@ export default class Board extends React.Component {
      * @returns {React.JSX.Element[]} the counts
      */
     displayCounts (rows) {
-        return (rows ? this.props.rowCounts : this.props.columnCounts).map((count, index) => <p key={index} onClick={() => {
+        return (rows ? this.state.board.rowCounts : this.state.board.columnCounts).map((count, index) => <p key={index} onClick={() => {
             this.setState({ board: rows ? this.state.board.softFloodRow(index) : this.state.board.softFloodColumn(index) });
         }}>{count}</p>);
     }
@@ -114,7 +113,7 @@ export default class Board extends React.Component {
      * @returns {React.JSX.Element[]} all runs
      */
     displayRuns () {
-        // create all runs from this.props.runs
+        // create all runs from this.state.board.runs
         // all ships should be grayed out by default
         // runsDiff[i] of them should be not grayed out
         // if runsDiff[i] is negative, they should all be red
@@ -122,8 +121,8 @@ export default class Board extends React.Component {
         const counts = this.state.board.countRunsLeft(true);
 
         let key = 0;
-        for (let i = 0; i < this.props.runs.length; i++) {
-            for (let j = 0; j < this.props.runs[i]; j++) {
+        for (let i = 0; i < this.state.board.runs.length; i++) {
+            for (let j = 0; j < this.state.board.runs[i]; j++) {
                 const classes = 'Run' + (counts[i] < 0 ? ' over' : '') + ((j < counts[i]) ? '' : ' desaturated');
                 out.push(<span className={classes} key={key}>{this.renderRun(i + 1)}</span>);
                 key++;
@@ -159,13 +158,13 @@ export default class Board extends React.Component {
                     </div>
                     <div className='Inner'>
                         <span/>
-                        <div className='Column Counts' style={{ gridTemplate: `auto / repeat(${this.props.height}, 50px)` }}>
+                        <div className='Column Counts' style={{ gridTemplate: `auto / repeat(${this.state.board.height}, 50px)` }}>
                             {this.displayCounts(false) /* false = columns */}
                         </div>
-                        <div className='Row Counts' style={{ gridTemplate: `repeat(${this.props.width}, 50px) / auto` }}>
+                        <div className='Row Counts' style={{ gridTemplate: `repeat(${this.state.board.width}, 50px) / auto` }}>
                             {this.displayCounts(true) /* true = rows */}
                         </div>
-                        <div className={'Ships' + (this.state.solved ? ' Solved' : '')} style={{ gridTemplate: `repeat(${this.props.width}, 50px) / repeat(${this.props.height}, 50px)` }}>
+                        <div className={'Ships' + (this.state.solved ? ' Solved' : '')} style={{ gridTemplate: `repeat(${this.state.board.width}, 50px) / repeat(${this.state.board.height}, 50px)` }}>
                             {this.displayBoard()}
                         </div>
                     </div>

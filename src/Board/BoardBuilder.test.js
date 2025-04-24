@@ -76,12 +76,12 @@ test('sameBoardState', () => {
 // when debugging anyone in their right mind would start with .setShip if both fail
 
 // https://www.brainbashers.com/showbattleships.asp?date=1116&size=6&puzz=A
-const board1 = new BoardBuilder(6, 6, undefined, undefined,
+const board1 = new BoardBuilder(6, 6, undefined,
     [2, 1, 0, 4, 0, 3], [0, 2, 3, 1, 1, 3], [3, 2, 1])
     .setShip([5, 2], GRAPHICAL_TYPES.SINGLE, true)
     .setShip([1, 2], PLAY_TYPES.WATER, true);
 
-const solution1 = new BoardBuilder(6, 6, undefined, undefined,
+const solution1 = new BoardBuilder(6, 6, undefined,
     [2, 1, 0, 4, 0, 3], [0, 2, 3, 1, 1, 3], [3, 2, 1])
     .setShip([5, 2], GRAPHICAL_TYPES.SINGLE)
     .setShip([0, 1], GRAPHICAL_TYPES.DOWN)
@@ -105,7 +105,7 @@ const solution1 = new BoardBuilder(6, 6, undefined, undefined,
 //         test only runs once
 //  test 3 boards and hope they cover everything
 test('solve', () => {
-    const board2 = new BoardBuilder(15, 15, undefined, undefined,
+    const board2 = new BoardBuilder(15, 15, undefined,
         [0, 5, 6, 1, 5, 1, 5, 1, 0, 5, 3, 0, 2, 0, 1],
         [2, 0, 1, 3, 4, 2, 3, 2, 4, 0, 4, 3, 3, 2, 2],
         [5, 4, 3, 2, 1])
@@ -140,7 +140,7 @@ test('solve', () => {
         .setShip([3, 14], GRAPHICAL_TYPES.WATER, true)
         .setShip([14, 14], GRAPHICAL_TYPES.SINGLE, true);
 
-    const solution2 = new BoardBuilder(15, 15, undefined, undefined,
+    const solution2 = new BoardBuilder(15, 15, undefined,
         [0, 5, 6, 1, 5, 1, 5, 1, 0, 5, 3, 0, 2, 0, 1],
         [2, 0, 1, 3, 4, 2, 3, 2, 4, 0, 4, 3, 3, 2, 2],
         [5, 4, 3, 2, 1])
@@ -200,7 +200,7 @@ test('solve', () => {
 });
 
 test('isSolved', () => {
-    const board = new BoardBuilder(4, 4, undefined, undefined, [3, 0, 0, 3], [2, 2, 1, 1], [1, 1, 1])
+    const board = new BoardBuilder(4, 4, undefined, [3, 0, 0, 3], [2, 2, 1, 1], [1, 1, 1])
         .softFloodColumn(1)
         .softFloodColumn(2)
         .softFloodRow(3)
@@ -228,7 +228,7 @@ test('isSolved', () => {
     expect(board.isSolved()).toBeTruthy();
 
     // test runs (this board is impossible to solve by the way)
-    const board2 = new BoardBuilder(4, 4, board, undefined, [3, 0, 0, 3], [2, 2, 1, 1], [0, 1, 1]);
+    const board2 = new BoardBuilder(4, 4, board, [3, 0, 0, 3], [2, 2, 1, 1], [0, 1, 1]);
     expect(board2.isSolved()).toBeFalsy();
 });
 
@@ -652,4 +652,36 @@ test('floodCorners', () => {
     expect(board.boardState[2].playType).toBe(PLAY_TYPES.WATER);
     expect(board.boardState[8].playType).toBe(PLAY_TYPES.WATER);
     expect(board.boardState[10].playType).toBe(PLAY_TYPES.WATER);
+});
+
+test('base64 export/import', () => {
+    const board = new BoardBuilder(2, 2, undefined, [2, 0], [1, 1], [0, 1])
+        .setShip(0, GRAPHICAL_TYPES.DOWN)
+        .setShip(2, GRAPHICAL_TYPES.UP);
+    const b64 = board.export();
+    const importedBoard = new BoardBuilder(b64);
+
+    expect(importedBoard.sameBoardState(board)).toBeTruthy();
+    expect(importedBoard.columnCounts).toEqual(board.columnCounts);
+    expect(importedBoard.rowCounts).toEqual(board.rowCounts);
+    expect(importedBoard.runs).toEqual(board.runs);
+
+    const board2 = new BoardBuilder(2, 2)
+        .setShip(0, GRAPHICAL_TYPES.DOWN)
+        .setShip(2, GRAPHICAL_TYPES.UP);
+    const board2B64 = board2.export();
+    const importedBoard2 = new BoardBuilder(board2B64);
+
+    expect(importedBoard2.sameBoardState(board2)).toBeTruthy();
+    expect(importedBoard2.columnCounts).toEqual([0, 0]);
+    expect(importedBoard2.rowCounts).toEqual([0, 0]);
+    expect(importedBoard2.runs).toEqual([0]);
+
+    const board3 = new BoardBuilder(16, 16)
+        .setShip([2, 0], GRAPHICAL_TYPES.SINGLE, true)
+        .setShip([6, 4], PLAY_TYPES.WATER);
+    const board3B64 = board3.export();
+    const importedBoard3 = BoardBuilder.b64ToBoard(board3B64);
+
+    expect(importedBoard3.sameBoardState(board3)).toBeTruthy();
 });
