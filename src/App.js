@@ -16,7 +16,10 @@ import Ship, { GRAPHICAL_TYPES, PLAY_TYPES } from './Board/Ship';
 // columnCounts={[0, 3, 1, 3, 1, 1, 5, 2, 2, 3, 3, 3]} rowCounts={[2, 5, 1, 5, 1, 1, 3, 4, 1, 0, 3, 1]}
 
 // https://www.brainbashers.com/showbattleships.asp?date=0607&size=15&puzz=A
-const preset = new BoardBuilder(15, 15)
+const preset = new BoardBuilder(15, 15, undefined,
+    [0, 5, 6, 1, 5, 1, 5, 1, 0, 5, 3, 0, 2, 0, 1],
+    [2, 0, 1, 3, 4, 2, 3, 2, 4, 0, 4, 3, 3, 2, 2],
+    [5, 4, 3, 2, 1])
     .setShip([3, 0], GRAPHICAL_TYPES.SHIP, true)
     .setShip([6, 0], GRAPHICAL_TYPES.WATER, true)
     .setShip([1, 2], GRAPHICAL_TYPES.WATER, true)
@@ -47,15 +50,15 @@ const preset = new BoardBuilder(15, 15)
     .setShip([6, 13], GRAPHICAL_TYPES.WATER, true)
     .setShip([3, 14], GRAPHICAL_TYPES.WATER, true)
     .setShip([14, 14], GRAPHICAL_TYPES.SINGLE, true)
-    .computeGraphicalTypes();
+    .computeGraphicalTypes()
+    .export();
 
 class App extends React.Component {
     render () {
         return (
             <div className="App">
                 <Board
-                    preset={preset}
-                    width={15}
+                    width={preset}
                     height={15}
                     columnCounts={[0, 5, 6, 1, 5, 1, 5, 1, 0, 5, 3, 0, 2, 0, 1]}
                     rowCounts={[2, 0, 1, 3, 4, 2, 3, 2, 4, 0, 4, 3, 3, 2, 2]}

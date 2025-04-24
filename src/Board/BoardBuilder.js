@@ -16,9 +16,7 @@ import Ship, { GRAPHICAL_TYPES, PLAY_TYPES } from './Ship.js';
  */
 export default class BoardBuilder {
     constructor (widthOrPreset, heightOrColumnCounts, presetOrRowCounts, columnCountsOrRunCounts, rowCounts, runs) {
-        const isPreset = !(typeof widthOrPreset === 'number');
-
-        if (isPreset && widthOrPreset instanceof BoardBuilder) {
+        if (widthOrPreset instanceof BoardBuilder) {
             const preset = widthOrPreset;
 
             this.width = widthOrPreset.width;
@@ -28,7 +26,7 @@ export default class BoardBuilder {
             this.rowCounts = presetOrRowCounts;
             this.runs = columnCountsOrRunCounts;
             this.boardState = createBoardState(this.width, this.height, preset);
-        } else if (isPreset && typeof widthOrPreset === 'string') {
+        } else if (typeof widthOrPreset === 'string') {
             const board = BoardBuilder.b64ToBoard(widthOrPreset);
 
             this.width = board.width;
@@ -77,7 +75,7 @@ export default class BoardBuilder {
 
         let runsBytes = '';
         const runs = this.runs ? this.runs : [0];
-        const runBuffer = Math.max(Math.ceil(Math.log2(this.width)), Math.ceil(Math.log2(this.height))) + 1;
+        const runBuffer = Math.max(Math.ceil(Math.log2(this.width)), Math.ceil(Math.log2(this.height)) + 1);
         runs.forEach((count, size) => {
             runsBytes += size.toString(2).padStart(runBuffer, '0');
             runsBytes += count.toString(2).padStart(runBuffer, '0');
@@ -88,16 +86,9 @@ export default class BoardBuilder {
 
         let currentUnknowns = 0;
         let currentWaters = 0;
-        for (let i = 0; i < this.width * this.height; i++) {
-            if (this.boardState[i].graphicalType === GRAPHICAL_TYPES.UNKNOWN) {
-                currentUnknowns++;
-                continue;
-            } else if (this.boardState[i].graphicalType === GRAPHICAL_TYPES.WATER) {
-                currentWaters++;
-                continue;
-            }
 
-            const maxLength = Math.ceil(Math.log2(this.width * this.height)) + 1;
+        const maxLength = Math.ceil(Math.log2(this.width * this.height + 1));
+        function addMultipleShips () {
             if (currentUnknowns * 5 > 5 + maxLength) {
                 out += '11111';
                 out += (currentUnknowns - 1).toString(2).padStart(maxLength, '0');
@@ -113,25 +104,28 @@ export default class BoardBuilder {
                     out += '00001';
                 }
             }
+        }
+
+        for (let i = 0; i < this.width * this.height; i++) {
+            if (currentUnknowns !== 0 || currentWaters !== 0) {
+                addMultipleShips();
+                currentUnknowns = 0;
+                currentWaters = 0;
+            }
+
+            if (this.boardState[i].graphicalType === GRAPHICAL_TYPES.UNKNOWN) {
+                currentUnknowns++;
+                continue;
+            } else if (this.boardState[i].graphicalType === GRAPHICAL_TYPES.WATER) {
+                currentWaters++;
+                continue;
+            }
 
             out += this.boardState[i].pinned ? '1' : '0';
             out += this.boardState[i].graphicalType.toString(2).padStart(4, '0');
-
-            currentUnknowns = 0;
-            currentWaters = 0;
         }
 
-        if (currentUnknowns !== 0 || currentWaters !== 0) {
-            if (currentUnknowns !== 0) {
-                for (let j = 0; j < currentUnknowns; j++ ) {
-                    out += '00000';
-                }
-            } else {
-                for (let j = 0; j < currentWaters; j++ ) {
-                    out += '00001';
-                }
-            }
-        }
+        addMultipleShips();
 
         const paddedString = out.length % 8 === 0 ? out : out + '0'.repeat(8 - (out.length % 8));
 
@@ -179,7 +173,7 @@ export default class BoardBuilder {
             trim(Math.ceil(Math.log2(height)) + 1);
         }
 
-        const runBits = Math.max(Math.ceil(Math.log2(width)), Math.ceil(Math.log2(height))) + 1;
+        const runBits = Math.max(Math.ceil(Math.log2(width)), Math.ceil(Math.log2(height)) + 1);
         const runEntries = parseInt(binaryString.slice(0, 8), 2);
         trim(8);
 
@@ -196,20 +190,20 @@ export default class BoardBuilder {
         const state = [];
         let i = 0;
         while (i < width * height && binaryString.length >= 5) {
+            const bits = binaryString.slice(0, 5);
             const pinned = binaryString.slice(0, 1) === '1';
             const type = parseInt(binaryString.slice(1, 5), 2);
             trim(5);
 
-            const maxLength = Math.ceil(Math.log2(this.width * this.height)) + 1;
+            const maxLength = Math.ceil(Math.log2(width * height + 1));
 
-            if (!pinned) {
-                state.push(new Ship(type, pinned));
-            } else if (type === 0b1111 || type === 0b1110) {
+            if (bits === '11111' || bits === '11110') {
                 const repeats = parseInt(binaryString.slice(0, maxLength), 2) + 1;
                 trim(maxLength);
 
+
                 for (let j = 0; j < repeats; j++ ) {
-                    state.push(new Ship(type === 0b1111 ? GRAPHICAL_TYPES.UNKNOWN : GRAPHICAL_TYPES.WATER));
+                    state.push(new Ship(bits === '11111' ? GRAPHICAL_TYPES.UNKNOWN : GRAPHICAL_TYPES.WATER));
                     i++;
                 }
             } else {

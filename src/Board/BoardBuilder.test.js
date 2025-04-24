@@ -678,9 +678,10 @@ test('base64 export/import', () => {
     expect(importedBoard2.runs).toEqual([0]);
 
     const board3 = new BoardBuilder(16, 16)
-        .setShip([2, 0], GRAPHICAL_TYPES.SINGLE, true);
+        .setShip([2, 0], GRAPHICAL_TYPES.SINGLE, true)
+        .setShip([6, 4], PLAY_TYPES.WATER);
     const board3B64 = board3.export();
-    const importedBoard3 = new BoardBuilder(board3B64);
+    const importedBoard3 = BoardBuilder.b64ToBoard(board3B64);
 
     expect(importedBoard3.sameBoardState(board3)).toBeTruthy();
 });
