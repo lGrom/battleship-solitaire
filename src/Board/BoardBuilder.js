@@ -1,3 +1,5 @@
+/* global btoa atob */
+
 /**
  * @typedef {number[]} Run
  * An array of indicies representing sqaures in a run
@@ -134,7 +136,6 @@ export default class BoardBuilder {
             byteArray.push(parseInt(paddedString.slice(i, i + 8), 2));
         }
 
-        // eslint-disable-next-line no-undef
         return btoa(String.fromCharCode(...byteArray));
     }
 
@@ -144,7 +145,6 @@ export default class BoardBuilder {
      * @returns {BoardBuilder} The board as a BoardBuilder object
      */
     static b64ToBoard (base64) {
-        // eslint-disable-next-line no-undef
         const string = atob(base64);
 
         let binaryString = '';

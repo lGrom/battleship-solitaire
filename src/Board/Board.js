@@ -175,13 +175,6 @@ export default class Board extends React.Component {
                 <button onClick={() => { this.reset(); }}>
                     Reset
                 </button>
-                <button onClick={() => {
-
-                    // eslint-disable-next-line no-undef, no-console
-                    console.log(this.state.board.export());
-                }}>
-                    Export
-                </button>
             </>
         );
     }
